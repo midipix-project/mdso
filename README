@@ -1,0 +1,6 @@
+mdso: midipix dso scavenger
+---------------------------
+* portable, cross-platform tool for creating
+  midipix-specific import libraries. The project
+  can be used as either a library or a stand-alone
+  application.

@@ -1,0 +1,10 @@
+*~
+*.o
+*.a
+*.so
+*.gch
+*.exe
+Makefile
+/bin
+/build
+/lib
