@@ -81,6 +81,10 @@ mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* utility api */
 
+/* low-level api */
+mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);
+mdso_api uint64_t mdso_crc64_mbstr	(const unsigned char * str, size_t * symlen);
+
 #ifdef __cplusplus
 }
 #endif
