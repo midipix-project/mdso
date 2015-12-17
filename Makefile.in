@@ -1,0 +1,298 @@
+PACKAGE 		= @package@
+PROJECT_DIR 		= @project_dir@
+
+BUILD 			= @build@
+HOST 			= @host@
+TARGET 			= @target@
+ARCH 			= @arch@
+TOOLCHAIN 		= @toolchain@
+SYSROOT 		= @sysroot@
+CROSS_COMPILE 		= @cross_compile@
+SHELL 			= @shell@
+
+CFLAGS_DEBUG 		= @cflags_debug@
+CFLAGS_COMMON 		= @cflags_common@
+CFLAGS_CMDLINE 		= @cflags_cmdline@
+CFLAGS_CONFIG 		= @cflags_config@
+CFLAGS_SYSROOT 		= @cflags_sysroot@
+CFLAGS_PATH 		= @cflags_path@
+
+LDFLAGS_DEBUG 		= @ldflags_debug@
+LDFLAGS_COMMON 		= @ldflags_common@
+LDFLAGS_CMDLINE 	= @ldflags_cmdline@
+LDFLAGS_CONFIG 		= @ldflags_config@
+LDFLAGS_SYSROOT 	= @ldflags_sysroot@
+LDFLAGS_PATH 		= @ldflags_path@
+
+PE_SUBSYSTEM 		= @pe_subsystem@
+PE_IMAGE_BASE 		= @pe_image_base@
+PE_CONFIG_DEFS  	= @pe_config_defs@
+
+ELF_EH_FRAME 		= @elf_eh_frame@
+ELF_HASH_STYLE 		= @elf_hash_style@
+ELF_CONFIG_DEFS 	= @elf_config_defs@
+
+PREFIX 			= @prefix@
+BINDIR 			= @bindir@
+LIBDIR 			= @libdir@
+INCLUDEDIR 		= @includedir@
+SYSLIBDIR 		= @syslibdir@
+MANDIR 			= @mandir@
+DOCDIR 			= @docdir@
+LIBEXECDIR 		= @libexecdir@
+
+NATIVE_CC 		= @native_cc@
+NATIVE_OS 		= @native_os@
+NATIVE_OS_BITS 		= @native_os_bits@
+NATIVE_OS_UNDERSCORE	= @native_os_underscore@
+
+USER_CC                 = @user_cc@
+USER_CPP                = @user_cpp@
+USER_CXX                = @user_cxx@
+
+
+all:
+install:
+shared:
+static:
+
+
+
+include $(PROJECT_DIR)/sysinfo/host/$(HOST).mk
+include $(PROJECT_DIR)/sysinfo/toolchain/$(TOOLCHAIN).mk
+
+include $(PROJECT_DIR)/project/defs.mk
+include $(PROJECT_DIR)/project/tree.mk
+include $(PROJECT_DIR)/project/depends.mk
+include $(PROJECT_DIR)/project/headers.mk
+include $(PROJECT_DIR)/project/common.mk
+include $(PROJECT_DIR)/project/arch.mk
+include $(PROJECT_DIR)/project/extras.mk
+include $(PROJECT_DIR)/project/overrides.mk
+
+
+
+$(APP_SRCS:%.c=%.o): CFLAGS_STATIC = $(CFLAGS_APP)
+
+src/%.lo: 	$(PROJECT_DIR)/src/%.c $(ALL_HEADERS) host.tag tree.tag
+		$(CC) -c -o $@ $< $(CFLAGS_SHARED)
+
+src/%.o: 	$(PROJECT_DIR)/src/%.c $(ALL_HEADERS) host.tag tree.tag
+		$(CC) -c -o $@ $< $(CFLAGS_STATIC)
+
+$(LIBDIR)/%$(OS_LIB_SUFFIX):
+		$(CC) -shared -o $@ $^ $(LDFLAGS_SHARED)
+
+$(LIBDIR)/%$(OS_ARCHIVE_EXT):
+		rm -f $@
+		$(AR) -rcs $@ $^
+
+
+
+all:		shared static app
+
+install:	install-libs install-headers install-app
+
+app:		default-app
+
+
+install-libs:	install-shared install-static install-implib
+
+install-headers:shared static
+		mkdir -p $(DESTDIR)/./$(PREFIX)/./$(INCLUDEDIR)/$(PACKAGE)
+		cp $(API_HEADERS) $(DESTDIR)/./$(PREFIX)/./$(INCLUDEDIR)/$(PACKAGE)
+
+install-shared:	shared install-implib
+		mkdir -p $(DESTDIR)/./$(PREFIX)/./$(LIBDIR)
+		cp $(SHARED_LIB) $(DESTDIR)/./$(PREFIX)/./$(LIBDIR)
+
+install-static:	static
+		mkdir -p $(DESTDIR)/./$(PREFIX)/./$(LIBDIR)
+		cp $(STATIC_LIB) $(DESTDIR)/./$(PREFIX)/./$(LIBDIR)
+
+install-app:	app
+		mkdir -p $(DESTDIR)/./$(PREFIX)/./$(BINDIR)
+		cp $(APP) $(DESTDIR)/./$(PREFIX)/./$(BINDIR)
+
+
+
+shared:		shared-lib shared-implib
+
+static:		static-lib
+
+shared-lib:	shared-objs $(SHARED_LIB)
+
+static-lib:	static-objs $(STATIC_LIB)
+
+shared-implib:	shared-lib
+
+
+
+default-app:	version.tag static $(DEFAULT_APP) $(APP)
+
+shared-app:	version.tag shared $(SHARED_APP)
+
+static-app:	version.tag static $(STATIC_APP)
+
+
+
+shared-objs:	dirs $(SHARED_OBJS)
+
+static-objs:	dirs $(STATIC_OBJS)
+
+app-objs:	dirs $(APP_OBJS)
+
+
+
+$(SHARED_LIB):	$(SHARED_OBJS)
+
+$(STATIC_LIB):	$(STATIC_OBJS)
+
+$(APP):		$(DEFAULT_APP)
+		cp $^ $@
+
+$(DEFAULT_APP):	$(STATIC_OBJS) $(APP_OBJS)
+		$(CC) -o $@ $^ $(LDFLAGS_APP)
+
+$(SHARED_APP):	$(SHARED_LIB) $(APP_OBJS)
+		$(CC) -o $@ $(APP_OBJS) -l$(PACKAGE) $(LDFLAGS_APP)
+
+$(STATIC_APP):	$(STATIC_OBJS) $(APP_OBJS)
+		$(CC) -static -o $@ $^ -l$(PACKAGE) $(LDFLAGS_STATIC)
+
+
+dirs: 		dirs.tag tree.tag
+
+dirs.tag:
+		mkdir -p $(BINDIR)
+		mkdir -p $(LIBDIR)
+		touch dirs.tag
+
+host.tag:	Makefile
+		$(PROJECT_DIR)/sysinfo/host/host.sh --compiler="$(CC)" --cflags="$(CFLAGS)"
+		touch host.tag
+
+version.tag:
+		$(PROJECT_DIR)/sysinfo/version.sh	\
+			-s $(PROJECT_DIR)		\
+			-o build/$(PACKAGE)_version.h	\
+			-p $(PACKAGE)
+		touch version.tag
+
+distclean:	clean
+		rm -f Makefile
+
+clean:
+		rm -f tree.tag
+		rm -f dirs.tag
+		rm -f host.tag
+		rm -f version.tag
+		rm -f $(SHARED_OBJS)
+		rm -f $(STATIC_OBJS)
+		rm -f $(APP_OBJS)
+		rm -f $(SHARED_LIB)
+		rm -f $(STATIC_LIB)
+		rm -f $(SHARED_IMPLIB)
+		rm -f $(APP)
+		rm -f $(DEFAULT_APP)
+		rm -f $(SHARED_APP)
+		rm -f $(STATIC_APP)
+
+
+.display:	.display-env .display-tools .display-flags \
+		.display-pe .display-elf .display-dirs .display-build
+
+.display-env:
+		@echo BUILD:'                  '$(BUILD)
+		@echo HOST:'                   '$(HOST)
+		@echo TARGET:'                 '$(TARGET)
+		@echo ARCH:'                   '$(ARCH)
+		@echo TOOLCHAIN:'              '$(TOOLCHAIN)
+		@echo SYSROOT:'                '$(SYSROOT)
+		@echo XCOMPILE:'               '$(CROSS_COMPILE)
+		@echo SHELL:'                  '$(SHELL)
+		@echo
+
+.display-tools:
+		@echo CC:'                     '$(CC)
+		@echo CPP:'                    '$(CPP)
+		@echo CXX:'                    '$(CXX)
+		@echo
+		@echo AS:'                     '$(AS)
+		@echo AR:'                     '$(AR)
+		@echo LD:'                     '$(LD)
+		@echo NM:'                     '$(NM)
+		@echo OBJDUMP:'                '$(OBJDUMP)
+		@echo RANLIB:'                 '$(RANLIB)
+		@echo SIZE:'                   '$(SIZE)
+		@echo STRIP:'                  '$(STRIP)
+		@echo STRINGS:'                '$(STRINGS)
+		@echo
+		@echo ADDR2LINE:'              '$(ADDR2LINE)
+		@echo COV:'                    '$(COV)
+		@echo CXXFILT'                 '$(CXXFILT)
+		@echo ELFEDIT:'                '$(ELFEDIT)
+		@echo OBJCOPY:'                '$(OBJCOPY)
+		@echo READELF:'                '$(READELF)
+		@echo
+
+.display-flags:
+		@echo CFLAGS_DEBUG:'           '$(CFLAGS_DEBUG)
+		@echo CFLAGS_COMMON:'          '$(CFLAGS_COMMON)
+		@echo CFLAGS_CMDLINE:'         '$(CFLAGS_CMDLINE)
+		@echo CFLAGS_CONFIG:'          '$(CFLAGS_CONFIG)
+		@echo CFLAGS_SYSROOT:'         '$(CFLAGS_SYSROOT)
+		@echo CFLAGS_PATH:'            '$(CFLAGS_PATH)
+		@echo
+		@echo LDFLAGS_DEBUG:'           '$(LDFLAGS_DEBUG)
+		@echo LDFLAGS_COMMON:'          '$(LDFLAGS_COMMON)
+		@echo LDFLAGS_CMDLINE:'         '$(LDFLAGS_CMDLINE)
+		@echo LDFLAGS_CONFIG:'          '$(LDFLAGS_CONFIG)
+		@echo LDFLAGS_SYSROOT:'         '$(LDFLAGS_SYSROOT)
+		@echo LDFLAGS_PATH:'            '$(LDFLAGS_PATH)
+		@echo
+
+.display-pe:
+		@echo PE_SUBSYSTEM:'           '$(PE_SUBSYSTEM)
+		@echo PE_IMAGE_BASE:'          '$(PE_IMAGE_BASE)
+		@echo PE_CONFIG_DEFS:'         '$(PE_CONFIG_DEFS)
+		@echo
+
+.display-elf:
+		@echo ELF_EH_FRAME:'           '$(ELF_EH_FRAME)
+		@echo ELF_HASH_STYLE:'         '$(ELF_HASH_STYLE)
+		@echo ELF_CONFIG_DEFS:'        '$(ELF_CONFIG_DEFS)
+		@echo
+
+.display-dirs:
+		@echo PREFIX:'                 '$(PREFIX)
+		@echo BINDIR:'                 '$(BINDIR)
+		@echo LIBDIR:'                 '$(LIBDIR)
+		@echo INCLUDEDIR:'             '$(INCLUDEDIR)
+		@echo SYSLIBDIR:'              '$(SYSLIBDIR)
+		@echo MANDIR:'                 '$(MANDIR)
+		@echo DOCDIR:'                 '$(DOCDIR)
+		@echo LIBEXECDIR:'             '$(LIBEXECDIR)
+		@echo
+
+.display-build:
+		@echo NATIVE_CC:'              '$(NATIVE_CC)
+		@echo NATIVE_OS:'              '$(NATIVE_OS)
+		@echo NATIVE_OS_BITS:'         '$(NATIVE_OS_BITS)
+		@echo NATIVE_OS_UNDERSCORE:'   '$(NATIVE_OS_UNDERSCORE)
+		@echo
+		@echo USER_CC:'                '$(USER_CC)
+		@echo USER_CPP:'               '$(USER_CPP)
+		@echo USER_CXX:'               '$(USER_CXX)
+		@echo
+
+
+.PHONY:		all install shared static app .display \
+		shared-objs shared-lib shared-implib \
+		static-objs static-lib \
+		default-app shared-app static-app \
+		install-shared install-static install-implib \
+		install-headers install-app \
+		clean distclean version \
+		.display-env .display-tools .display-flags \
+		.display-pe .display-elf .display-dirs .display-build
