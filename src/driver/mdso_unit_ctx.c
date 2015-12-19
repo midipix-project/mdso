@@ -18,6 +18,12 @@
 static int mdso_free_unit_ctx_impl(struct mdso_unit_ctx_impl * ctx, int status)
 {
 	if (ctx) {
+		if (ctx->expsyms && ctx->expsyms->buffer)
+			free(ctx->expsyms->buffer);
+
+		if (ctx->expsyms)
+			free(ctx->expsyms);
+
 		mdso_unmap_input(&ctx->map);
 		free(ctx);
 	}
@@ -55,6 +61,83 @@ static FILE * mdso_stdin_to_tmp(void)
 	return ftmp;
 }
 
+static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
+{
+	int		nsyms;
+	size_t		nbytes;
+	size_t		size;
+	char *		dst;
+	const char *	ch;
+	const char **	sym;
+
+	const char	exphdr[] = "EXPORTS\n";
+	const char	imphdr[] = "IMPORTS\n";
+
+	ch	= ctx->map.addr;
+	nbytes	= ctx->map.size;
+
+	for (nsyms=0; nbytes; ch++,nbytes--)
+		nsyms += (*ch == '\n');
+
+	size = offsetof(struct mdso_unit_ctx_impl,expsyms);
+	size += (nsyms+1)*sizeof(const char *);
+
+	if (!(ctx->expsyms = calloc(size,1)))
+		return -1;
+
+	if (!(ctx->expsyms->buffer = calloc(ctx->map.size,1)))
+		return -1;
+
+	ch	= ctx->map.addr;
+	nbytes	= ctx->map.size;
+	sym	= ctx->expsyms->syms;
+	dst	= ctx->expsyms->buffer;
+	size	= strlen(exphdr);
+
+	/* support .def input files */
+	if ((nbytes >= size) && !(strncmp(ch,exphdr,size))) {
+		ch	+= size;
+		nbytes	-= size;
+	}
+
+	/* advance to first symbol */
+	for (; nbytes && ((*ch==' ')
+			|| (*ch=='\t')
+			|| (*ch=='\r')
+			|| (*ch=='\n')); nbytes--)
+		ch++;
+
+	/* support .def input files */
+	size = strlen(imphdr);
+
+	while (nbytes && ((nbytes < size) || (strncmp(ch,imphdr,size)))) {
+		/* vector */
+		*sym++ = dst;
+
+		/* symbol */
+		for (; nbytes && ((*ch!=' ')
+				&& (*ch!='\t')
+				&& (*ch!='\r')
+				&& (*ch!='\n')); nbytes--)
+			*dst++ = *ch++;
+
+		dst++;
+
+		/* discard rest of input line */
+		for (; nbytes && (*ch!='\n'); nbytes--)
+			ch++;
+
+		/* advance to next symbol */
+		for (; nbytes && ((*ch==' ')
+				|| (*ch=='\t')
+				|| (*ch=='\r')
+				|| (*ch=='\n')); nbytes--)
+			ch++;
+	}
+
+	return 0;
+}
+
 int mdso_get_unit_ctx(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			path,
@@ -82,6 +165,9 @@ int mdso_get_unit_ctx(
 	if (fd > 0)
 		close(fd);
 
+	if (mdso_create_symbol_vector(ctx))
+		return mdso_free_unit_ctx_impl(ctx,-1);
+
 	memcpy(&ctx->cctx,dctx->cctx,
 		sizeof(ctx->cctx));
 
@@ -90,6 +176,7 @@ int mdso_get_unit_ctx(
 	ctx->uctx.path	= &ctx->path;
 	ctx->uctx.map	= &ctx->map;
 	ctx->uctx.cctx	= &ctx->cctx;
+	ctx->uctx.syms	= ctx->expsyms->syms;
 
 	*pctx = &ctx->uctx;
 	return 0;

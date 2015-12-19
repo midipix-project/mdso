@@ -12,6 +12,11 @@ enum app_tags {
 	TAG_VERSION,
 };
 
+struct mdso_expsyms {
+	char *		buffer;
+	const char *	syms[];
+};
+
 struct mdso_driver_ctx_impl {
 	struct mdso_common_ctx	cctx;
 	struct mdso_driver_ctx	ctx;
@@ -20,6 +25,7 @@ struct mdso_driver_ctx_impl {
 struct mdso_unit_ctx_impl {
 	const char *		path;
 	struct mdso_input	map;
+	struct mdso_expsyms *	expsyms;
 	struct mdso_common_ctx	cctx;
 	struct mdso_unit_ctx	uctx;
 };

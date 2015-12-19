@@ -63,6 +63,7 @@ struct mdso_unit_ctx {
 	const char * const *		path;
 	const struct mdso_input *	map;
 	const struct mdso_common_ctx *	cctx;
+	const char * const *		syms;
 	void *				any;
 	int				status;
 	int				nerrors;
