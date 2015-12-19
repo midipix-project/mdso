@@ -74,6 +74,7 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(struct argv_meta * me
 		if (!entry->fopt)
 			*units++ = entry->arg;
 
+	ictx->meta = meta;
 	ictx->ctx.ctx.units = ictx->units;
 	return &ictx->ctx;
 }
