@@ -80,7 +80,7 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(struct argv_meta * me
 	return &ictx->ctx;
 }
 
-int mdso_get_driver_ctx_fail(struct argv_meta * meta)
+static int mdso_get_driver_ctx_fail(struct argv_meta * meta)
 {
 	argv_free(meta);
 	return -1;
