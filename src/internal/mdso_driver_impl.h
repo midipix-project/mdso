@@ -24,6 +24,8 @@ struct mdso_expsyms {
 struct mdso_driver_ctx_impl {
 	struct mdso_common_ctx	cctx;
 	struct mdso_driver_ctx	ctx;
+	char *			asmbase;
+	int			fddst;
 };
 
 struct mdso_unit_ctx_impl {

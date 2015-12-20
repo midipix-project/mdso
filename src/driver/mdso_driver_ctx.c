@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdbool.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #define ARGV_DRIVER
 
@@ -58,7 +61,10 @@ static int mdso_driver_usage(
 	return MDSO_USAGE;
 }
 
-static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(struct argv_meta * meta, size_t nunits)
+static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
+	struct argv_meta *		meta,
+	const struct mdso_common_ctx *	cctx,
+	size_t				nunits)
 {
 	struct mdso_driver_ctx_alloc *	ictx;
 	size_t				size;
@@ -71,6 +77,9 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(struct argv_meta * me
 	if (!(ictx = calloc(size,1)))
 		return 0;
 
+	if (cctx)
+		memcpy(&ictx->ctx.cctx,cctx,sizeof(*cctx));
+
 	for (entry=meta->entries,units=ictx->units; entry->fopt || entry->arg; entry++)
 		if (!entry->fopt)
 			*units++ = entry->arg;
@@ -80,8 +89,41 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(struct argv_meta * me
 	return &ictx->ctx;
 }
 
-static int mdso_get_driver_ctx_fail(struct argv_meta * meta)
+static int mdso_dstdir_open(const struct mdso_common_ctx * cctx, const char * asmbase)
 {
+	int fdtop;
+	int fddst;
+	const int dirmode = S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
+
+	if ((fdtop = openat(AT_FDCWD,cctx->dstdir,O_DIRECTORY)) < 0) {
+		if (mkdirat(AT_FDCWD,cctx->dstdir,dirmode) < 0)
+			return -1;
+		else if ((fdtop = openat(AT_FDCWD,cctx->dstdir,O_DIRECTORY)) < 0)
+			return -1;
+	}
+
+	if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) < 0) {
+		if (mkdirat(fdtop,asmbase,dirmode) < 0)
+			return -1;
+		else if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) < 0)
+			return -1;
+	}
+
+	close(fdtop);
+	return fddst;
+}
+
+static int mdso_get_driver_ctx_fail(
+	struct argv_meta *	meta,
+	char *			asmbase,
+	int			fddst)
+{
+	if (fddst >= 0)
+		close(fddst);
+
+	if (asmbase)
+		free(asmbase);
+
 	argv_free(meta);
 	return -1;
 }
@@ -100,6 +142,9 @@ int mdso_get_driver_ctx(
 	size_t				nunits;
 	const char *			program;
 	const char *			pretty;
+	char *				asmbase;
+	char *				dot;
+	int				fddst;
 
 	options = mdso_default_options;
 
@@ -108,6 +153,8 @@ int mdso_get_driver_ctx(
 
 	nunits	= 0;
 	pretty	= 0;
+	asmbase = 0;
+	fddst	= -1;
 	program = argv_program_name(argv[0]);
 	memset(&cctx,0,sizeof(cctx));
 
@@ -149,13 +196,28 @@ int mdso_get_driver_ctx(
 	if (pretty && !strcmp(pretty,"yaml"))
 		cctx.fmtflags |= MDSO_PRETTY_YAML;
 
-	if (!(ctx = mdso_driver_ctx_alloc(meta,nunits)))
-		return mdso_get_driver_ctx_fail(meta);
+	if (!cctx.libname)
+		cctx.libname = "win32any";
 
+	if (!(asmbase = strdup(cctx.libname)))
+		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+
+	if ((dot = strchr(asmbase,'.')))
+		*dot = '\0';
+
+	if (cctx.dstdir && (fddst = mdso_dstdir_open(&cctx,asmbase)) < 0)
+		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+
+	if (!(ctx = mdso_driver_ctx_alloc(meta,&cctx,nunits)))
+		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+
+	ctx->asmbase		= asmbase;
+	ctx->cctx.asmbase	= asmbase;
+
+	ctx->fddst		= fddst;
 	ctx->ctx.program	= program;
 	ctx->ctx.cctx		= &ctx->cctx;
 
-	memcpy(&ctx->cctx,&cctx,sizeof(cctx));
 	*pctx = &ctx->ctx;
 	return MDSO_OK;
 }
@@ -166,22 +228,31 @@ int mdso_create_driver_ctx(
 {
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl *	ctx;
+	int				fddst  = -1;
 	const char *			argv[] = {"mdso_driver",0};
 
 	if (!(meta = argv_get(argv,mdso_default_options,0)))
 		return -1;
 
-	if (!(ctx = mdso_driver_ctx_alloc(meta,0)))
-		return mdso_get_driver_ctx_fail(0);
+	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)
+		return mdso_get_driver_ctx_fail(meta,0,fddst);
+
+	if (!(ctx = mdso_driver_ctx_alloc(meta,cctx,0)))
+		return mdso_get_driver_ctx_fail(meta,0,fddst);
 
 	ctx->ctx.cctx = &ctx->cctx;
-	memcpy(&ctx->cctx,cctx,sizeof(*cctx));
 	*pctx = &ctx->ctx;
 	return MDSO_OK;
 }
 
 static void mdso_free_driver_ctx_impl(struct mdso_driver_ctx_alloc * ictx)
 {
+	if (ictx->ctx.fddst >= 0)
+		close(ictx->ctx.fddst);
+
+	if (ictx->ctx.asmbase)
+		free(ictx->ctx.asmbase);
+
 	argv_free(ictx->meta);
 	free(ictx);
 }

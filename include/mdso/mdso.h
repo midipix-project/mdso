@@ -48,6 +48,7 @@ struct mdso_common_ctx {
 	uint64_t			actflags;
 	uint64_t			fmtflags;
 	const char *			libname;
+	const char *			asmbase;
 	const char *			dstdir;
 };
 
