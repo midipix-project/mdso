@@ -126,6 +126,14 @@ int mdso_get_driver_ctx(
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
 					break;
 
+				case TAG_LIBNAME:
+					cctx.libname = entry->arg;
+					break;
+
+				case TAG_DSTDIR:
+					cctx.dstdir = entry->arg;
+					break;
+
 				case TAG_PRETTY:
 					pretty = entry->arg;
 					break;

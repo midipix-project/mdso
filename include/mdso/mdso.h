@@ -47,6 +47,8 @@ struct mdso_common_ctx {
 	uint64_t			drvflags;
 	uint64_t			actflags;
 	uint64_t			fmtflags;
+	const char *			libname;
+	const char *			dstdir;
 };
 
 struct mdso_driver_ctx {

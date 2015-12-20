@@ -8,6 +8,12 @@ const struct argv_option mdso_default_options[] = {
 	{"help",		'h',TAG_HELP,ARGV_OPTARG_OPTIONAL,"short|long",0,
 				"show usage information [listing %s options only]"},
 
+	{"libname",		'n',TAG_LIBNAME,ARGV_OPTARG_REQUIRED,0,"<libname>",
+				"set dependency library name to %s"},
+
+	{"dstdir",		'd',TAG_DSTDIR,ARGV_OPTARG_REQUIRED,0,"<dstdir>",
+				"save generated assembly files under %s"},
+
 	{"pretty",		'p',TAG_PRETTY,ARGV_OPTARG_REQUIRED,"yaml",0,
 				"format output for parsing by %s"},
 
