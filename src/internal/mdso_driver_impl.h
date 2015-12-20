@@ -10,6 +10,8 @@
 enum app_tags {
 	TAG_HELP,
 	TAG_VERSION,
+	TAG_PRETTY,
+	TAG_EXPSYMS,
 };
 
 struct mdso_expsyms {

@@ -81,6 +81,7 @@ mdso_api int  mdso_map_input		(int fd, const char * path, int prot, struct mdso_
 mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* utility api */
+mdso_api int  mdso_output_export_symbols(const struct mdso_unit_ctx *, const struct mdso_common_ctx *, FILE *);
 
 /* low-level api */
 mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);

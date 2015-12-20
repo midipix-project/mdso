@@ -11,6 +11,7 @@
 #define ARGV_DRIVER
 
 #include <mdso/mdso.h>
+#include <mdso/mdso_output.h>
 #include "mdso_driver_impl.h"
 #include "argv/argv.h"
 
@@ -98,6 +99,7 @@ int mdso_get_driver_ctx(
 	struct argv_entry *		entry;
 	size_t				nunits;
 	const char *			program;
+	const char *			pretty;
 
 	options = mdso_default_options;
 
@@ -105,6 +107,7 @@ int mdso_get_driver_ctx(
 		return -1;
 
 	nunits	= 0;
+	pretty	= 0;
 	program = argv_program_name(argv[0]);
 	memset(&cctx,0,sizeof(cctx));
 
@@ -122,10 +125,21 @@ int mdso_get_driver_ctx(
 				case TAG_VERSION:
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
 					break;
+
+				case TAG_PRETTY:
+					pretty = entry->arg;
+					break;
+
+				case TAG_EXPSYMS:
+					cctx.fmtflags |= MDSO_OUTPUT_EXPORT_SYMS;
+					break;
 			}
 		} else
 			nunits++;
 	}
+
+	if (pretty && !strcmp(pretty,"yaml"))
+		cctx.fmtflags |= MDSO_PRETTY_YAML;
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,nunits)))
 		return mdso_get_driver_ctx_fail(meta);

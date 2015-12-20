@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <mdso/mdso.h>
+#include <mdso/mdso_output.h>
 #include "mdso_version.h"
 
 #ifndef MDSO_DRIVER_FLAGS
@@ -23,6 +24,12 @@ static ssize_t mdso_version(struct mdso_driver_ctx * dctx)
 
 static void mdso_perform_unit_actions(struct mdso_unit_ctx * uctx)
 {
+        uint64_t flags = uctx->cctx->fmtflags;
+
+        if (flags & MDSO_OUTPUT_EXPORT_SYMS) {
+                uctx->status = mdso_output_export_symbols(uctx,uctx->cctx,stdout);
+                uctx->nerrors += !!uctx->status;
+        }
 }
 
 static int mdso_exit(struct mdso_driver_ctx * dctx, int nerrors)
