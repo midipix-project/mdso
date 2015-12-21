@@ -89,6 +89,7 @@ mdso_api int  mdso_output_export_symbols(const struct mdso_unit_ctx *, const str
 /* low-level api */
 mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);
 mdso_api uint64_t mdso_crc64_mbstr	(const unsigned char * str, size_t * symlen);
+mdso_api FILE *   mdso_create_output	(const struct mdso_driver_ctx *, const char * asmname);
 
 #ifdef __cplusplus
 }
