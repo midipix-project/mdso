@@ -15,6 +15,7 @@
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
+#include <mdso/mdso_specs.h>
 #include "mdso_driver_impl.h"
 #include "argv/argv.h"
 
@@ -175,6 +176,15 @@ int mdso_get_driver_ctx(
 
 				case TAG_QUAD_PTR:
 					cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+					break;
+
+				case TAG_LIBPATH:
+					if (!(strcmp(entry->arg,"loader")))
+						cctx.dsoflags |= MDSO_FLAG_LOADER_PATH;
+					if (!(strcmp(entry->arg,"peb")))
+						cctx.dsoflags |= MDSO_FLAG_PEB_PATH;
+					if (!(strcmp(entry->arg,"system32")))
+						cctx.dsoflags |= MDSO_FLAG_SYSTEM32;
 					break;
 
 				case TAG_LIBNAME:
