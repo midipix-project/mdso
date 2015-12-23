@@ -92,6 +92,7 @@ mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);
 mdso_api uint64_t mdso_crc64_mbstr	(const unsigned char * str, size_t * symlen);
 mdso_api FILE *   mdso_create_output	(const struct mdso_driver_ctx *, const char * asmname);
 mdso_api int      mdso_generate_symentry(const struct mdso_common_ctx *, const char * sym, FILE * fout);
+mdso_api int      mdso_generate_symfn	(const char * sym, FILE * fout);
 
 #ifdef __cplusplus
 }
