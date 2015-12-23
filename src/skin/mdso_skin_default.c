@@ -8,6 +8,9 @@ const struct argv_option mdso_default_options[] = {
 	{"help",		'h',TAG_HELP,ARGV_OPTARG_OPTIONAL,"short|long",0,
 				"show usage information [listing %s options only]"},
 
+	{"machine",		'm',TAG_QUAD_PTR,ARGV_OPTARG_REQUIRED,"32|64",0,
+				"set machine bits to %s"},
+
 	{"libname",		'n',TAG_LIBNAME,ARGV_OPTARG_REQUIRED,0,"<libname>",
 				"set dependency library name to %s"},
 

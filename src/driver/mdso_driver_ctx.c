@@ -173,6 +173,10 @@ int mdso_get_driver_ctx(
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
 					break;
 
+				case TAG_QUAD_PTR:
+					cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+					break;
+
 				case TAG_LIBNAME:
 					cctx.libname = entry->arg;
 					break;

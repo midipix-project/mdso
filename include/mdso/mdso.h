@@ -35,6 +35,7 @@ extern "C" {
 
 #define MDSO_DRIVER_VERSION		0x0010
 #define MDSO_DRIVER_DRY_RUN		0x0020
+#define MDSO_DRIVER_QUAD_PTR		0x0040
 
 /* unit action flags */
 
