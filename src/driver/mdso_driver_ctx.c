@@ -207,6 +207,9 @@ int mdso_get_driver_ctx(
 			nunits++;
 	}
 
+	if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
+		return mdso_driver_usage(program,0,options,meta);
+
 	if (pretty && !strcmp(pretty,"yaml"))
 		cctx.fmtflags |= MDSO_PRETTY_YAML;
 
