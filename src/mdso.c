@@ -60,9 +60,11 @@ int mdso_main(int argc, const char ** argv, const char ** envp)
 		}
 	}
 
-	dctx->status  =  mdso_create_implib_sources(dctx);
-	dctx->nerrors += !!dctx->status;
-	ret += dctx->nerrors;
+	if (*dctx->units) {
+		dctx->status  =  mdso_create_implib_sources(dctx);
+		dctx->nerrors += !!dctx->status;
+		ret += dctx->nerrors;
+	}
 
 	return mdso_exit(dctx,ret);
 }
