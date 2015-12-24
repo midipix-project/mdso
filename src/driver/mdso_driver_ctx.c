@@ -86,6 +86,7 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 			*units++ = entry->arg;
 
 	ictx->meta = meta;
+	ictx->ctx.fdtmpin = -1;
 	ictx->ctx.ctx.units = ictx->units;
 	return &ictx->ctx;
 }
@@ -266,6 +267,9 @@ static void mdso_free_driver_ctx_impl(struct mdso_driver_ctx_alloc * ictx)
 {
 	if (ictx->ctx.fddst >= 0)
 		close(ictx->ctx.fddst);
+
+	if (ictx->ctx.fdtmpin >= 0)
+		close(ictx->ctx.fdtmpin);
 
 	if (ictx->ctx.asmbase)
 		free(ictx->ctx.asmbase);

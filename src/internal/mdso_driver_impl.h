@@ -28,6 +28,7 @@ struct mdso_driver_ctx_impl {
 	struct mdso_driver_ctx	ctx;
 	char *			asmbase;
 	int			fddst;
+	int			fdtmpin;
 };
 
 struct mdso_unit_ctx_impl {

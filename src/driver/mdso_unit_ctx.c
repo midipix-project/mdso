@@ -31,15 +31,34 @@ static int mdso_free_unit_ctx_impl(struct mdso_unit_ctx_impl * ctx, int status)
 	return status;
 }
 
-static FILE * mdso_stdin_to_tmp(void)
+static FILE * mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 {
+	struct mdso_driver_ctx_impl *	ictx;
+	uintptr_t			addr;
+	int				fdtmp;
+
 	FILE *	ftmp;
 	char	buf[4096];
 	ssize_t	nread;
 	int	ret;
 
+	addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
+	ictx = (struct mdso_driver_ctx_impl *)addr;
+
+	if (ictx->fdtmpin >= 0) {
+		if ((fdtmp = dup(ictx->fdtmpin)) < 0)
+			return 0;
+
+		return fdopen(fdtmp,"r");
+	}
+
 	if (!(ftmp = tmpfile()))
 		return 0;
+
+	if ((ictx->fdtmpin = dup(fileno(ftmp))) < 0) {
+		fclose(ftmp);
+		return 0;
+	}
 
 	nread = read(0,buf,sizeof(buf)-1);
 
@@ -152,7 +171,7 @@ int mdso_get_unit_ctx(
 
 	if (strcmp(path,"-"))
 		fd = -1;
-	else if (!(ftmp = mdso_stdin_to_tmp()))
+	else if (!(ftmp = mdso_stdin_to_tmp(dctx)))
 		return mdso_free_unit_ctx_impl(ctx,-1);
 	else if ((fd = dup(fileno(ftmp))) < 0)
 		return mdso_free_unit_ctx_impl(ctx,-1);
