@@ -49,7 +49,10 @@ static FILE * mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 		if ((fdtmp = dup(ictx->fdtmpin)) < 0)
 			return 0;
 
-		return fdopen(fdtmp,"r");
+		if (!(ftmp = fdopen(fdtmp,"r")))
+			close(fdtmp);
+
+		return ftmp;
 	}
 
 	if (!(ftmp = tmpfile()))
