@@ -75,7 +75,7 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 	size =  sizeof(struct mdso_driver_ctx_alloc);
 	size += (nunits+1)*sizeof(const char *);
 
-	if (!(ictx = calloc(size,1)))
+	if (!(ictx = calloc(1,size)))
 		return 0;
 
 	if (cctx)

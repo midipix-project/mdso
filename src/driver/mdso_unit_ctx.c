@@ -104,10 +104,10 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 	size = offsetof(struct mdso_unit_ctx_impl,expsyms);
 	size += (nsyms+1)*sizeof(const char *);
 
-	if (!(ctx->expsyms = calloc(size,1)))
+	if (!(ctx->expsyms = calloc(1,size)))
 		return -1;
 
-	if (!(ctx->expsyms->buffer = calloc(ctx->map.size,1)))
+	if (!(ctx->expsyms->buffer = calloc(1,ctx->map.size)))
 		return -1;
 
 	ch	= ctx->map.addr;
@@ -169,7 +169,7 @@ int mdso_get_unit_ctx(
 	FILE *				ftmp;
 	int				fd;
 
-	if (!dctx || !(ctx = calloc(sizeof(*ctx),1)))
+	if (!dctx || !(ctx = calloc(1,sizeof(*ctx))))
 		return -1;
 
 	if (strcmp(path,"-"))
