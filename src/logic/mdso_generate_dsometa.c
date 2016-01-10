@@ -56,7 +56,7 @@ int mdso_generate_dsometa(
 	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
 		return -1;
 
-	if ((fprintf(fout,"\t%s\t%d\t# flags\n",".long",cctx->dsoflags)) < 0)
+	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",cctx->dsoflags)) < 0)
 		return -1;
 
 	for (line=asm_meta_lines; *line; line++)
