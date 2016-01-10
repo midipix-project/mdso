@@ -38,7 +38,7 @@ static int mdso_exit(struct mdso_driver_ctx * dctx, int nerrors)
 	return nerrors ? 2 : 0;
 }
 
-int mdso_main(int argc, const char ** argv, const char ** envp)
+int mdso_main(int argc, char ** argv, char ** envp)
 {
 	int				ret;
 	struct mdso_driver_ctx *	dctx;
@@ -71,7 +71,7 @@ int mdso_main(int argc, const char ** argv, const char ** envp)
 
 #ifndef MDSO_IN_A_BOX
 
-int main(int argc, const char ** argv, const char ** envp)
+int main(int argc, char ** argv, char ** envp)
 {
 	return mdso_main(argc,argv,envp);
 }

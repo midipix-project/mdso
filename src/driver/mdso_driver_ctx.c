@@ -131,8 +131,8 @@ static int mdso_get_driver_ctx_fail(
 }
 
 int mdso_get_driver_ctx(
-	const char **		argv,
-	const char **		envp,
+	char **			argv,
+	char **			envp,
 	uint32_t		flags,
 	struct mdso_driver_ctx ** pctx)
 {
@@ -247,7 +247,7 @@ int mdso_create_driver_ctx(
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl *	ctx;
 	int				fddst  = -1;
-	const char *			argv[] = {"mdso_driver",0};
+	char *				argv[] = {"mdso_driver",0};
 
 	if (!(meta = argv_get(argv,mdso_default_options,0)))
 		return -1;

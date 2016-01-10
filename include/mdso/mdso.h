@@ -75,7 +75,7 @@ struct mdso_unit_ctx {
 };
 
 /* driver api */
-mdso_api int  mdso_get_driver_ctx	(const char ** argv, const char ** envp, uint32_t flags, struct mdso_driver_ctx **);
+mdso_api int  mdso_get_driver_ctx	(char ** argv, char ** envp, uint32_t flags, struct mdso_driver_ctx **);
 mdso_api int  mdso_create_driver_ctx	(const struct mdso_common_ctx *, struct mdso_driver_ctx **);
 mdso_api void mdso_free_driver_ctx	(struct mdso_driver_ctx *);
 
