@@ -6,6 +6,9 @@
 #include <sys/types.h>
 
 #include <mdso/mdso.h>
+#include "argv/argv.h"
+
+extern const struct argv_option mdso_default_options[];
 
 enum app_tags {
 	TAG_HELP,

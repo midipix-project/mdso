@@ -19,8 +19,6 @@
 #include "mdso_driver_impl.h"
 #include "argv/argv.h"
 
-extern const struct argv_option mdso_default_options[];
-
 struct mdso_driver_ctx_alloc {
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl	ctx;
