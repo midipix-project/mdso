@@ -9,6 +9,7 @@
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
 #include "mdso_version.h"
+#include "mdso_driver_impl.h"
 
 #ifndef MDSO_DRIVER_FLAGS
 #define MDSO_DRIVER_FLAGS	MDSO_DRIVER_VERBOSITY_ERRORS \
