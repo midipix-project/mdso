@@ -30,5 +30,5 @@ const struct argv_option mdso_default_options[] = {
 	{"expsyms",		'e',TAG_EXPSYMS,ARGV_OPTARG_NONE,0,0,0,
 				"print exported symbols" },
 
-	{0}
+	{0,0,0,0,0,0,0,0}
 };
