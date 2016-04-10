@@ -157,6 +157,7 @@ int mdso_get_driver_ctx(
 	fddst	= -1;
 	program = argv_program_name(argv[0]);
 	memset(&cctx,0,sizeof(cctx));
+	cctx.drvflags = flags;
 
 	if (!argv[1] && (flags & MDSO_DRIVER_VERBOSITY_USAGE))
 		return mdso_driver_usage(program,0,options,meta);
