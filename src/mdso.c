@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
-#include "mdso_version.h"
 #include "mdso_driver_impl.h"
 
 #ifndef MDSO_DRIVER_FLAGS
@@ -16,11 +15,19 @@
 				| MDSO_DRIVER_VERBOSITY_USAGE
 #endif
 
-static const char vermsg[] = "%s (git://midipix.org/mdso): commit %s.\n";
+static const char vermsg[] = "%s (git://midipix.org/mdso): "
+			     "version %d.%d.%d.\n"
+			     "[commit reference: %s]\n";
 
 static ssize_t mdso_version(struct mdso_driver_ctx * dctx)
 {
-	return fprintf(stdout,vermsg,dctx->program,MDSO_GIT_VERSION);
+	const struct mdso_source_version * verinfo;
+
+	verinfo = mdso_source_version();
+
+	return fprintf(stdout,vermsg,dctx->program,
+			verinfo->major,verinfo->minor,verinfo->revision,
+			verinfo->commit);
 }
 
 static void mdso_perform_unit_actions(struct mdso_unit_ctx * uctx)
