@@ -39,6 +39,13 @@ extern "C" {
 
 /* unit action flags */
 
+struct mdso_source_version {
+	int		major;
+	int		minor;
+	int		revision;
+	const char *	commit;
+};
+
 struct mdso_input {
 	void *	addr;
 	size_t	size;
@@ -73,6 +80,9 @@ struct mdso_unit_ctx {
 	int				status;
 	int				nerrors;
 };
+
+/* package info */
+mdso_api				const struct mdso_source_version * mdso_source_version(void);
 
 /* driver api */
 mdso_api int  mdso_get_driver_ctx	(char ** argv, char ** envp, uint32_t flags, struct mdso_driver_ctx **);

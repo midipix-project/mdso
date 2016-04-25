@@ -16,8 +16,17 @@
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
 #include <mdso/mdso_specs.h>
+#include "mdso_version.h"
 #include "mdso_driver_impl.h"
 #include "argv/argv.h"
+
+/* package info */
+static const struct mdso_source_version mdso_src_version = {
+	MDSO_TAG_VER_MAJOR,
+	MDSO_TAG_VER_MINOR,
+	MDSO_TAG_VER_PATCH,
+	MDSO_GIT_VERSION
+};
 
 struct mdso_driver_ctx_alloc {
 	struct argv_meta *		meta;
@@ -288,4 +297,9 @@ void mdso_free_driver_ctx(struct mdso_driver_ctx * ctx)
 		ictx = (struct mdso_driver_ctx_alloc *)addr;
 		mdso_free_driver_ctx_impl(ictx);
 	}
+}
+
+const struct mdso_source_version * mdso_source_version(void)
+{
+	return &mdso_src_version;
 }
