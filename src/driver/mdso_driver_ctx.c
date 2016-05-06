@@ -155,6 +155,8 @@ int mdso_get_driver_ctx(
 	char *				dot;
 	int				fddst;
 
+	(void)envp;
+
 	options = mdso_default_options;
 
 	if (!(meta = argv_get(argv,options,mdso_argv_flags(flags))))
