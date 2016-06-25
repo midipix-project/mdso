@@ -1,6 +1,7 @@
 COMMON_SRCS = \
 	src/crc/mdso_crc64.c \
 	src/crc/mdso_crc32.c \
+	src/driver/mdso_amain.c \
 	src/driver/mdso_driver_ctx.c \
 	src/driver/mdso_unit_ctx.c \
 	src/logic/mdso_create_implib_sources.c \
