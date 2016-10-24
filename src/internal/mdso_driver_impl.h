@@ -46,4 +46,17 @@ struct mdso_unit_ctx_impl {
 	struct mdso_unit_ctx	uctx;
 };
 
+static inline struct mdso_driver_ctx_impl * mdso_get_driver_ictx(
+	const struct mdso_driver_ctx * dctx)
+{
+        uintptr_t addr;
+
+        if (dctx) {
+                addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
+                return (struct mdso_driver_ctx_impl *)addr;
+        }
+
+        return 0;
+}
+
 #endif
