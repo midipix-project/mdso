@@ -72,11 +72,13 @@ int mdso_main(int argc, char ** argv, char ** envp)
 	const char **			unit;
 
 	if ((ret = mdso_get_driver_ctx(argv,envp,MDSO_DRIVER_FLAGS,&dctx)))
-		return (ret == MDSO_USAGE) ? !--argc : 2;
+		return (ret == MDSO_USAGE)
+			? !--argc
+			: MDSO_ERROR;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_VERSION)
 		if ((mdso_version(dctx)) < 0)
-			return mdso_exit(dctx,2);
+			return mdso_exit(dctx,MDSO_ERROR);
 
 	for (unit=dctx->units; *unit && !dctx->errv[0]; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
@@ -88,5 +90,5 @@ int mdso_main(int argc, char ** argv, char ** envp)
 	if (*dctx->units && !dctx->errv[0])
 		mdso_create_implib_sources(dctx);
 
-	return mdso_exit(dctx,dctx->errv[0] ? 2 : 0);
+	return mdso_exit(dctx,dctx->errv[0] ? MDSO_ERROR : MDSO_OK);
 }
