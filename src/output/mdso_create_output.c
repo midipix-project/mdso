@@ -21,6 +21,7 @@ FILE * mdso_create_output(
 	struct mdso_driver_ctx_impl *	ictx;
 	uintptr_t			addr;
 	int				fdout;
+	FILE *				fout;
 
 	if (!dctx->cctx->dstdir)
 		return stdout;
@@ -33,5 +34,10 @@ FILE * mdso_create_output(
                         S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0)
 		return 0;
 
-	return fdopen(fdout,"w");
+	if (!(fout = fdopen(fdout,"w"))) {
+		close(fdout);
+		return 0;
+	}
+
+	return fout;
 }
