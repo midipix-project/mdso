@@ -42,7 +42,7 @@ int mdso_map_input(
 		return MDSO_SYSTEM_ERROR(dctx);
 
 	else if (st.st_size == 0)
-		return MDSO_SYSTEM_ERROR(dctx);
+		return MDSO_CUSTOM_ERROR(dctx,0);
 
 	map->size = st.st_size;
 	map->addr = mmap(0,map->size,prot,MAP_PRIVATE,fd,0);
