@@ -46,12 +46,15 @@ static ssize_t mdso_version(struct mdso_driver_ctx * dctx)
 			verclr[4],verinfo->commit,verclr[5]);
 }
 
-static void mdso_perform_unit_actions(struct mdso_unit_ctx * uctx)
+static void mdso_perform_unit_actions(
+	struct mdso_driver_ctx * dctx,
+	struct mdso_unit_ctx *   uctx)
 {
         uint64_t flags = uctx->cctx->fmtflags;
 
         if (flags & MDSO_OUTPUT_EXPORT_SYMS) {
-                uctx->status = mdso_output_export_symbols(uctx,uctx->cctx,stdout);
+                uctx->status = mdso_output_export_symbols(
+			dctx,uctx,stdout);
                 uctx->nerrors += !!uctx->status;
         }
 }
@@ -78,7 +81,7 @@ int mdso_main(int argc, char ** argv, char ** envp)
 
 	for (unit=dctx->units; *unit; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
-			mdso_perform_unit_actions(uctx);
+			mdso_perform_unit_actions(dctx,uctx);
 			ret += uctx->nerrors;
 			mdso_free_unit_ctx(uctx);
 		}

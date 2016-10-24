@@ -12,6 +12,7 @@
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
+#include "mdso_errinfo_impl.h"
 
 static int pretty_header(const struct mdso_common_ctx * cctx, FILE * fout)
 {
@@ -29,8 +30,8 @@ static int pretty_export_item(const struct mdso_common_ctx * cctx, const char * 
 }
 
 int mdso_output_export_symbols(
+	const struct mdso_driver_ctx *	dctx,
 	const struct mdso_unit_ctx *	uctx,
-	const struct mdso_common_ctx *	cctx,
 	FILE *				fout)
 {
 	const char * const * sym;
@@ -38,12 +39,12 @@ int mdso_output_export_symbols(
 	if (!uctx->syms[0])
 		return 0;
 
-	if ((pretty_header(cctx,fout)) < 0)
-		return -1;
+	if ((pretty_header(dctx->cctx,fout)) < 0)
+		return MDSO_FILE_ERROR(dctx);
 
 	for (sym=uctx->syms; *sym; sym++)
-		if ((pretty_export_item(cctx,*sym,fout)) < 0)
-			return -1;
+		if ((pretty_export_item(dctx->cctx,*sym,fout)) < 0)
+			return MDSO_FILE_ERROR(dctx);
 
 	return 0;
 }
