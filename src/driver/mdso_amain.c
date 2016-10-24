@@ -78,14 +78,14 @@ int mdso_main(int argc, char ** argv, char ** envp)
 		if ((mdso_version(dctx)) < 0)
 			return mdso_exit(dctx,2);
 
-	for (unit=dctx->units; *unit; unit++) {
+	for (unit=dctx->units; *unit && !dctx->errv[0]; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
 			mdso_perform_unit_actions(dctx,uctx);
 			mdso_free_unit_ctx(uctx);
 		}
 	}
 
-	if (*dctx->units)
+	if (*dctx->units && !dctx->errv[0])
 		mdso_create_implib_sources(dctx);
 
 	return mdso_exit(dctx,dctx->errv[0] ? 2 : 0);
