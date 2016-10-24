@@ -11,6 +11,7 @@ COMMON_SRCS = \
 	src/logic/mdso_generate_symfn.c \
 	src/logic/mdso_map_input.c \
 	src/output/mdso_create_output.c \
+	src/output/mdso_output_error.c \
 	src/output/mdso_output_export_symbols.c \
 	src/skin/mdso_skin_default.c \
 

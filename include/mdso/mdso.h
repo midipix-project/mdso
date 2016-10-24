@@ -37,6 +37,10 @@ extern "C" {
 #define MDSO_DRIVER_DRY_RUN		0x0020
 #define MDSO_DRIVER_QUAD_PTR		0x0040
 
+#define MDSO_DRIVER_ANNOTATE_ALWAYS	0x1000
+#define MDSO_DRIVER_ANNOTATE_NEVER	0x2000
+#define MDSO_DRIVER_ANNOTATE_FULL	0x4000
+
 /* error flags */
 #define MDSO_ERROR_TOP_LEVEL		0x0001
 #define MDSO_ERROR_NESTED		0x0002
@@ -112,8 +116,10 @@ mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* utility api */
 mdso_api int  mdso_main			(int, char **, char **);
-mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
+mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);
+mdso_api int  mdso_output_error_record	(const struct mdso_driver_ctx *, const struct mdso_error_info *);
+mdso_api int  mdso_output_error_vector	(const struct mdso_driver_ctx *);
 
 /* low-level api */
 mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);
