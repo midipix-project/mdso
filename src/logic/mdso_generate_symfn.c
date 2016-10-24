@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
 #include <mdso/mdso.h>
+#include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
 	"\t.file     \"__%s_sym_fn.s\"\n",
@@ -19,13 +21,16 @@ static const char * const asm_lines[] = {
 	0
 };
 
-int mdso_generate_symfn(const char * sym, FILE * fout)
+int mdso_generate_symfn(
+	const struct mdso_driver_ctx *	dctx,
+	const char *			sym,
+	FILE *				fout)
 {
 	const char * const * line;
 
 	for (line=asm_lines; *line; line++)
 		if ((fprintf(fout,*line,sym)) < 0)
-			return -1;
+			return MDSO_FILE_ERROR(dctx);
 
 	return 0;
 }
