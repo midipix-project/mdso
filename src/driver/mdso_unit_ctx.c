@@ -14,6 +14,7 @@
 
 #include <mdso/mdso.h>
 #include "mdso_driver_impl.h"
+#include "mdso_errinfo_impl.h"
 
 static int mdso_free_unit_ctx_impl(struct mdso_unit_ctx_impl * ctx, int status)
 {
@@ -169,26 +170,36 @@ int mdso_get_unit_ctx(
 	FILE *				ftmp;
 	int				fd;
 
-	if (!dctx || !(ctx = calloc(1,sizeof(*ctx))))
-		return -1;
+	if (!dctx)
+		return MDSO_CUSTOM_ERROR(dctx,0);
+
+	else if (!(ctx = calloc(1,sizeof(*ctx))))
+		return MDSO_BUFFER_ERROR(dctx);
 
 	if (strcmp(path,"-"))
 		fd = -1;
+
 	else if (!(ftmp = mdso_stdin_to_tmp(dctx)))
-		return mdso_free_unit_ctx_impl(ctx,-1);
+		return mdso_free_unit_ctx_impl(
+			ctx,MDSO_FILE_ERROR(dctx));
+
 	else if ((fd = dup(fileno(ftmp))) < 0)
-		return mdso_free_unit_ctx_impl(ctx,-1);
+		return mdso_free_unit_ctx_impl(
+			ctx,MDSO_SYSTEM_ERROR(dctx));
+
 	else
 		fclose(ftmp);
 
 	if (mdso_map_input(fd,path,PROT_READ,&ctx->map))
-		return mdso_free_unit_ctx_impl(ctx,-1);
+		return mdso_free_unit_ctx_impl(
+			ctx,MDSO_SYSTEM_ERROR(dctx));
 
 	if (fd > 0)
 		close(fd);
 
 	if (mdso_create_symbol_vector(ctx))
-		return mdso_free_unit_ctx_impl(ctx,-1);
+		return mdso_free_unit_ctx_impl(
+			ctx,MDSO_BUFFER_ERROR(dctx));
 
 	memcpy(&ctx->cctx,dctx->cctx,
 		sizeof(ctx->cctx));
