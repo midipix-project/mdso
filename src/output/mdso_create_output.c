@@ -13,6 +13,7 @@
 
 #include <mdso/mdso.h>
 #include "mdso_driver_impl.h"
+#include "mdso_errinfo_impl.h"
 
 FILE * mdso_create_output(
 	const struct mdso_driver_ctx *	dctx,
@@ -31,11 +32,14 @@ FILE * mdso_create_output(
 
 	if ((fdout = openat(ictx->fddst,asmname,
                         O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
-                        S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0)
+                        S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0) {
+		MDSO_SYSTEM_ERROR(dctx);
 		return 0;
+	}
 
 	if (!(fout = fdopen(fdout,"w"))) {
 		close(fdout);
+		MDSO_SYSTEM_ERROR(dctx);
 		return 0;
 	}
 
