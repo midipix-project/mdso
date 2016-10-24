@@ -37,7 +37,6 @@ extern "C" {
 #define MDSO_DRIVER_DRY_RUN		0x0020
 #define MDSO_DRIVER_QUAD_PTR		0x0040
 
-/* unit action flags */
 
 struct mdso_source_version {
 	int		major;
