@@ -37,6 +37,12 @@ extern "C" {
 #define MDSO_DRIVER_DRY_RUN		0x0020
 #define MDSO_DRIVER_QUAD_PTR		0x0040
 
+/* error flags */
+#define MDSO_ERROR_TOP_LEVEL		0x0001
+#define MDSO_ERROR_NESTED		0x0002
+#define MDSO_ERROR_CHILD		0x0004
+#define MDSO_ERROR_CUSTOM		0x0008
+
 
 struct mdso_source_version {
 	int		major;
@@ -48,6 +54,15 @@ struct mdso_source_version {
 struct mdso_input {
 	void *	addr;
 	size_t	size;
+};
+
+struct mdso_error_info {
+	int				syserror;
+	int				liberror;
+	const char *			function;
+	int				line;
+	unsigned			flags;
+	void *				ctx;
 };
 
 struct mdso_common_ctx {
@@ -65,6 +80,7 @@ struct mdso_driver_ctx {
 	const char *			program;
 	const char *			module;
 	const struct mdso_common_ctx *	cctx;
+	struct mdso_error_info **	errv;
 	void *				any;
 	int				status;
 	int				nerrors;
