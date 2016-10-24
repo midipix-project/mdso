@@ -52,17 +52,16 @@ static void mdso_perform_unit_actions(
 {
         uint64_t flags = uctx->cctx->fmtflags;
 
-        if (flags & MDSO_OUTPUT_EXPORT_SYMS) {
-                uctx->status = mdso_output_export_symbols(
+        if (flags & MDSO_OUTPUT_EXPORT_SYMS)
+		mdso_output_export_symbols(
 			dctx,uctx,stdout);
-                uctx->nerrors += !!uctx->status;
-        }
 }
 
-static int mdso_exit(struct mdso_driver_ctx * dctx, int nerrors)
+static int mdso_exit(struct mdso_driver_ctx * dctx, int ret)
 {
+	mdso_output_error_vector(dctx);
 	mdso_free_driver_ctx(dctx);
-	return nerrors ? 2 : 0;
+	return ret;
 }
 
 int mdso_main(int argc, char ** argv, char ** envp)
@@ -82,16 +81,12 @@ int mdso_main(int argc, char ** argv, char ** envp)
 	for (unit=dctx->units; *unit; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
 			mdso_perform_unit_actions(dctx,uctx);
-			ret += uctx->nerrors;
 			mdso_free_unit_ctx(uctx);
 		}
 	}
 
-	if (*dctx->units) {
-		dctx->status  =  mdso_create_implib_sources(dctx);
-		dctx->nerrors += !!dctx->status;
-		ret += dctx->nerrors;
-	}
+	if (*dctx->units)
+		mdso_create_implib_sources(dctx);
 
-	return mdso_exit(dctx,ret);
+	return mdso_exit(dctx,dctx->errv[0] ? 2 : 0);
 }
