@@ -35,7 +35,13 @@ int mdso_map_input(
 	if ((ret = fstat(fd,&st) < 0) && fnew)
 		close(fd);
 
+	else if ((st.st_size == 0) && fnew)
+		close(fd);
+
 	if (ret < 0)
+		return MDSO_SYSTEM_ERROR(dctx);
+
+	else if (st.st_size == 0)
 		return MDSO_SYSTEM_ERROR(dctx);
 
 	map->size = st.st_size;
