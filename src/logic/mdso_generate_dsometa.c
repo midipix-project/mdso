@@ -55,6 +55,9 @@ int mdso_generate_dsometa(
 	if ((fputs(alignstr,fout)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
+	if ((fprintf(fout,".__dsometa_%s:\n",dctx->cctx->libname)) < 0)
+		return MDSO_FILE_ERROR(dctx);
+
 	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
