@@ -78,6 +78,7 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 	size_t				size;
 	struct argv_entry *		entry;
 	const char **			units;
+	int				elements;
 
 	size =  sizeof(struct mdso_driver_ctx_alloc);
 	size += (nunits+1)*sizeof(const char *);
@@ -92,9 +93,15 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 		if (!entry->fopt)
 			*units++ = entry->arg;
 
+	elements = sizeof(ictx->ctx.erribuf) / sizeof(*ictx->ctx.erribuf);
+
+	ictx->ctx.errinfp  = &ictx->ctx.erriptr[0];
+	ictx->ctx.erricap  = &ictx->ctx.erriptr[--elements];
+
 	ictx->meta = meta;
 	ictx->ctx.fdtmpin = -1;
 	ictx->ctx.ctx.units = ictx->units;
+	ictx->ctx.ctx.errv  = ictx->ctx.errinfp;
 	return &ictx->ctx;
 }
 

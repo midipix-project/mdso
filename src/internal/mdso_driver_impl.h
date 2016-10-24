@@ -32,6 +32,10 @@ struct mdso_driver_ctx_impl {
 	char *			asmbase;
 	int			fddst;
 	int			fdtmpin;
+	struct mdso_error_info**errinfp;
+	struct mdso_error_info**erricap;
+	struct mdso_error_info *erriptr[64];
+	struct mdso_error_info	erribuf[64];
 };
 
 struct mdso_unit_ctx_impl {
