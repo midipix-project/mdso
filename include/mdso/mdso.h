@@ -86,8 +86,6 @@ struct mdso_driver_ctx {
 	const struct mdso_common_ctx *	cctx;
 	struct mdso_error_info **	errv;
 	void *				any;
-	int				status;
-	int				nerrors;
 };
 
 struct mdso_unit_ctx {
