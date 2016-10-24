@@ -94,8 +94,6 @@ struct mdso_unit_ctx {
 	const struct mdso_common_ctx *	cctx;
 	const char * const *		syms;
 	void *				any;
-	int				status;
-	int				nerrors;
 };
 
 /* package info */
