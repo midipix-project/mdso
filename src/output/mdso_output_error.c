@@ -35,7 +35,7 @@ static const char * mdso_output_error_header(const struct mdso_error_info * erri
 static const char * mdso_output_strerror(const struct mdso_error_info * erri)
 {
 	if (erri->flags & MDSO_ERROR_CUSTOM)
-		return "flow error: unexpected condition or other.";
+		return "flow error: unexpected condition or other";
 
 	else if (erri->flags & MDSO_ERROR_NESTED)
 		return "";
