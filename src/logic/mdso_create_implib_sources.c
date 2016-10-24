@@ -56,7 +56,7 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 			if (!(fout = mdso_create_output(dctx,asmname)))
 				return MDSO_NESTED_ERROR(dctx);
 
-			ret = mdso_generate_symentry(dctx->cctx,*sym,fout);
+			ret = mdso_generate_symentry(dctx,*sym,fout);
 
 			if (fout != stdout)
 				fclose(fout);

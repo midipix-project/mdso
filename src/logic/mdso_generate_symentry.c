@@ -6,8 +6,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
 #include <mdso/mdso.h>
 #include <mdso/mdso_specs.h>
+#include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
 	"\t.file     \"__%s_sym_entry.s\"\n",
@@ -24,7 +26,7 @@ static const char * const asm_lines[] = {
 };
 
 int mdso_generate_symentry(
-	const struct mdso_common_ctx *	cctx,
+	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
 	FILE *				fout)
 {
@@ -32,7 +34,7 @@ int mdso_generate_symentry(
 	const char *		alignstr;
 	const char *		ptrsize;
 
-	if (cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
+	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		alignstr = "\t.balign   16\n\n";
 		ptrsize  = ".quad";
 	} else {
@@ -42,19 +44,19 @@ int mdso_generate_symentry(
 
 	for (line=asm_lines; *line; line++)
 		if ((fprintf(fout,*line,sym)) < 0)
-			return -1;
+			return MDSO_FILE_ERROR(dctx);
 
 	if ((fputs(alignstr,fout)) < 0)
-		return -1;
+		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"__imp_%s:\n",sym)) < 0)
-		return -1;
+		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"\t%s\t.__dsostr_%s\n",ptrsize,sym)) < 0)
-		return -1;
+		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t.__dsometa_%s\n",ptrsize,cctx->libname)) < 0)
-		return -1;
+	if ((fprintf(fout,"\t%s\t.__dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
+		return MDSO_FILE_ERROR(dctx);
 
 	return 0;
 }
