@@ -6,8 +6,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
 #include <mdso/mdso.h>
 #include <mdso/mdso_specs.h>
+#include "mdso_errinfo_impl.h"
 
 static const char * const asm_hdr_lines[] = {
 	"\t.file     \"__%s_dso_meta.s\"\n",
@@ -31,14 +33,14 @@ static const char * const asm_meta_lines[] = {
 };
 
 int mdso_generate_dsometa(
-	const struct mdso_common_ctx *	cctx,
+	const struct mdso_driver_ctx *	dctx,
 	FILE *				fout)
 {
 	const char * const *	line;
 	const char *		alignstr;
 	const char *		ptrsize;
 
-	if (cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
+	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		alignstr = "\t.balign   16\n\n";
 		ptrsize  = ".quad";
 	} else {
@@ -47,21 +49,21 @@ int mdso_generate_dsometa(
 	}
 
 	for (line=asm_hdr_lines; *line; line++)
-		if ((fprintf(fout,*line,cctx->libname)) < 0)
-			return -1;
+		if ((fprintf(fout,*line,dctx->cctx->libname)) < 0)
+			return MDSO_FILE_ERROR(dctx);
 
 	if ((fputs(alignstr,fout)) < 0)
-		return -1;
+		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
-		return -1;
+		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",cctx->dsoflags)) < 0)
-		return -1;
+	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
+		return MDSO_FILE_ERROR(dctx);
 
 	for (line=asm_meta_lines; *line; line++)
 		if ((fprintf(fout,*line,ptrsize)) < 0)
-			return -1;
+			return MDSO_FILE_ERROR(dctx);
 
 	return 0;
 }
