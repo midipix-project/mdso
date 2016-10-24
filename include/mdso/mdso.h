@@ -107,7 +107,7 @@ mdso_api void mdso_free_driver_ctx	(struct mdso_driver_ctx *);
 mdso_api int  mdso_get_unit_ctx		(const struct mdso_driver_ctx *, const char * path, struct mdso_unit_ctx **);
 mdso_api void mdso_free_unit_ctx	(struct mdso_unit_ctx *);
 
-mdso_api int  mdso_map_input		(int fd, const char * path, int prot, struct mdso_input *);
+mdso_api int  mdso_map_input		(const struct mdso_driver_ctx *, int fd, const char * path, int prot, struct mdso_input *);
 mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* utility api */

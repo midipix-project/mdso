@@ -13,12 +13,14 @@
 #include <sys/stat.h>
 
 #include <mdso/mdso.h>
+#include "mdso_errinfo_impl.h"
 
 int mdso_map_input(
-	int			fd,
-	const char *		path,
-	int			prot,
-	struct mdso_input *	map)
+	const struct mdso_driver_ctx *	dctx,
+	int				fd,
+	const char *			path,
+	int				prot,
+	struct mdso_input *		map)
 {
 	struct stat	st;
 	bool		fnew;
@@ -28,13 +30,13 @@ int mdso_map_input(
 		fd  = open(path,O_RDONLY | O_CLOEXEC);
 
 	if (fd < 0)
-		return -1;
+		return MDSO_SYSTEM_ERROR(dctx);
 
 	if ((ret = fstat(fd,&st) < 0) && fnew)
 		close(fd);
 
 	if (ret < 0)
-		return -1;
+		return MDSO_SYSTEM_ERROR(dctx);
 
 	map->size = st.st_size;
 	map->addr = mmap(0,map->size,prot,MAP_PRIVATE,fd,0);
@@ -42,7 +44,9 @@ int mdso_map_input(
 	if (fnew)
 		close(fd);
 
-	return (map->addr == MAP_FAILED) ? -1 : 0;
+	return (map->addr == MAP_FAILED)
+		? MDSO_SYSTEM_ERROR(dctx)
+		: 0;
 }
 
 int mdso_unmap_input(struct mdso_input * map)

@@ -190,9 +190,9 @@ int mdso_get_unit_ctx(
 	else
 		fclose(ftmp);
 
-	if (mdso_map_input(fd,path,PROT_READ,&ctx->map))
+	if (mdso_map_input(dctx,fd,path,PROT_READ,&ctx->map))
 		return mdso_free_unit_ctx_impl(
-			ctx,MDSO_SYSTEM_ERROR(dctx));
+			ctx,MDSO_NESTED_ERROR(dctx));
 
 	if (fd > 0)
 		close(fd);
