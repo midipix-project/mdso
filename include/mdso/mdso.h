@@ -107,6 +107,9 @@ mdso_api void mdso_free_unit_ctx	(struct mdso_unit_ctx *);
 mdso_api int  mdso_map_input		(const struct mdso_driver_ctx *, int fd, const char * path, int prot, struct mdso_input *);
 mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
+/* helper api */
+mdso_api FILE*mdso_create_asm_source	(const struct mdso_driver_ctx *, const char * asmname);
+
 /* utility api */
 mdso_api int  mdso_main			(int, char **, char **);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
@@ -117,7 +120,6 @@ mdso_api int  mdso_output_error_vector	(const struct mdso_driver_ctx *);
 /* low-level api */
 mdso_api uint32_t mdso_crc32_mbstr	(const unsigned char * str, size_t * symlen);
 mdso_api uint64_t mdso_crc64_mbstr	(const unsigned char * str, size_t * symlen);
-mdso_api FILE *   mdso_create_output	(const struct mdso_driver_ctx *, const char * asmname);
 mdso_api int      mdso_generate_dsometa	(const struct mdso_driver_ctx *, FILE * fout);
 mdso_api int      mdso_generate_symentry(const struct mdso_driver_ctx *, const char * sym, FILE * fout);
 mdso_api int      mdso_generate_symfn	(const struct mdso_driver_ctx *, const char * sym, FILE * fout);

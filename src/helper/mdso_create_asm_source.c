@@ -15,7 +15,7 @@
 #include "mdso_driver_impl.h"
 #include "mdso_errinfo_impl.h"
 
-FILE * mdso_create_output(
+FILE * mdso_create_asm_source(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			asmname)
 {
