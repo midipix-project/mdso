@@ -27,17 +27,17 @@ struct mdso_expsyms {
 };
 
 struct mdso_driver_ctx_impl {
-	struct mdso_common_ctx	cctx;
-	struct mdso_driver_ctx	ctx;
-	char *			asmbase;
-	int			fddst;
-	int			fdtmpin;
-	const struct mdso_unit_ctx * euctx;
-	const char *		eunit;
-	struct mdso_error_info**errinfp;
-	struct mdso_error_info**erricap;
-	struct mdso_error_info *erriptr[64];
-	struct mdso_error_info	erribuf[64];
+	struct mdso_common_ctx          cctx;
+	struct mdso_driver_ctx          ctx;
+	char *                          asmbase;
+	int                             fddst;
+	int                             fdtmpin;
+	const struct mdso_unit_ctx *    euctx;
+	const char *                    eunit;
+	struct mdso_error_info**        errinfp;
+	struct mdso_error_info**        erricap;
+	struct mdso_error_info *        erriptr[64];
+	struct mdso_error_info          erribuf[64];
 };
 
 struct mdso_unit_ctx_impl {
