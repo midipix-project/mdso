@@ -13,6 +13,7 @@
 static const char aclr_reset[]   = "\x1b[0m";
 static const char aclr_bold[]    = "\x1b[1m";
 
+static const char aclr_red[]     = "\x1b[31m";
 static const char aclr_green[]   = "\x1b[32m";
 static const char aclr_blue[]    = "\x1b[34m";
 static const char aclr_magenta[] = "\x1b[35m";
@@ -42,6 +43,18 @@ static const char * mdso_output_error_header(const struct mdso_error_info * erri
 		return "distorted state";
 }
 
+static const char * mdso_output_unit_header(const struct mdso_error_info * erri)
+{
+	if (!(erri->eflags & MDSO_ERROR_CUSTOM))
+		return "while opening";
+
+	else if (erri->elibcode == MDSO_ERR_SOURCE_SIZE_ZERO)
+		return "while mapping";
+
+	else
+		return "while parsing";
+}
+
 static const char * mdso_output_strerror(const struct mdso_error_info * erri)
 {
 	if (erri->eflags & MDSO_ERROR_CUSTOM)
@@ -66,7 +79,19 @@ static int mdso_output_error_record_plain(
 	const struct mdso_driver_ctx *	dctx,
 	const struct mdso_error_info *	erri)
 {
+	const char * epath;
 	const char * errdesc = mdso_output_strerror(erri);
+
+	epath = erri->euctx
+		? *erri->euctx->path
+		: erri->eunit;
+
+	if (epath && !(erri->eflags & MDSO_ERROR_NESTED))
+		if (fprintf(stderr,"%s: [%s] '%s':\n",
+				dctx->program,
+				mdso_output_unit_header(erri),
+				epath) < 0)
+			return -1;
 
 	if (fprintf(stderr,"%s: %s %s(), line %d%s%s.\n",
 			dctx->program,
@@ -84,7 +109,30 @@ static int mdso_output_error_record_annotated(
 	const struct mdso_driver_ctx *	dctx,
 	const struct mdso_error_info *	erri)
 {
+	const char * epath;
 	const char * errdesc = mdso_output_strerror(erri);
+
+	epath = erri->euctx
+		? *erri->euctx->path
+		: erri->eunit;
+
+	if (epath && !(erri->eflags & MDSO_ERROR_NESTED))
+		if (fprintf(
+				stderr,
+				"%s%s%s:%s %s[%s]%s %s%s'%s'%s:\n",
+
+				aclr_bold,aclr_magenta,
+				dctx->program,
+				aclr_reset,
+
+				aclr_bold,
+				mdso_output_unit_header(erri),
+				aclr_reset,
+
+				aclr_bold,aclr_red,
+				epath,
+				aclr_reset) < 0)
+			return -1;
 
 	if (fprintf(
 			stderr,
