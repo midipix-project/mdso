@@ -28,6 +28,9 @@ int mdso_record_error(
 	*ictx->errinfp = &ictx->erribuf[ictx->errinfp - ictx->erriptr];
 	erri = *ictx->errinfp;
 
+	erri->euctx     = ictx->euctx;
+	erri->eunit     = ictx->eunit;
+
 	erri->edctx     = dctx;
 	erri->esyscode  = esyscode;
 	erri->elibcode  = elibcode;
