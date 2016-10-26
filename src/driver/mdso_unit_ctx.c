@@ -176,6 +176,9 @@ int mdso_get_unit_ctx(
 	else if (!(ctx = calloc(1,sizeof(*ctx))))
 		return MDSO_BUFFER_ERROR(dctx);
 
+	mdso_driver_set_ectx(
+		dctx,0,path);
+
 	if (strcmp(path,"-"))
 		fd = -1;
 
