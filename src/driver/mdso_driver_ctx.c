@@ -301,8 +301,8 @@ void mdso_free_driver_ctx(struct mdso_driver_ctx * ctx)
 	uintptr_t			addr;
 
 	if (ctx) {
-		addr = (uintptr_t)ctx - offsetof(struct mdso_driver_ctx_alloc,ctx);
-		addr = addr - offsetof(struct mdso_driver_ctx_impl,ctx);
+		addr = (uintptr_t)ctx - offsetof(struct mdso_driver_ctx_impl,ctx);
+		addr = addr - offsetof(struct mdso_driver_ctx_alloc,ctx);
 		ictx = (struct mdso_driver_ctx_alloc *)addr;
 		mdso_free_driver_ctx_impl(ictx);
 	}
