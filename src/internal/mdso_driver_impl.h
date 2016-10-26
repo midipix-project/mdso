@@ -32,6 +32,8 @@ struct mdso_driver_ctx_impl {
 	char *			asmbase;
 	int			fddst;
 	int			fdtmpin;
+	const struct mdso_unit_ctx * euctx;
+	const char *		eunit;
 	struct mdso_error_info**errinfp;
 	struct mdso_error_info**erricap;
 	struct mdso_error_info *erriptr[64];
@@ -57,6 +59,18 @@ static inline struct mdso_driver_ctx_impl * mdso_get_driver_ictx(
         }
 
         return 0;
+}
+
+static inline void mdso_driver_set_ectx(
+	const struct mdso_driver_ctx * dctx,
+	const struct mdso_unit_ctx *   uctx,
+	const char *                   unit)
+{
+	struct mdso_driver_ctx_impl *  ictx;
+
+	ictx        = mdso_get_driver_ictx(dctx);
+	ictx->euctx = uctx;
+	ictx->eunit = unit;
 }
 
 #endif
