@@ -9,12 +9,12 @@
 
 int mdso_record_error(
 	const struct mdso_driver_ctx *,
-	int		syserror,
-	int		liberror,
-	const char *	function,
-	int		line,
-	unsigned	flags,
-	void *		ctx);
+	int		esyscode,
+	int		elibcode,
+	const char *	efunction,
+	int		eline,
+	unsigned	eflags,
+	void *		eany);
 
 #define MDSO_SYSTEM_ERROR(dctx)           \
 	mdso_record_error(                \
@@ -58,11 +58,11 @@ int mdso_record_error(
 		MDSO_ERROR_TOP_LEVEL,     \
 		0)
 
-#define MDSO_CUSTOM_ERROR(dctx,liberror)  \
+#define MDSO_CUSTOM_ERROR(dctx,elibcode)  \
 	mdso_record_error(                \
 		dctx,                     \
 		0,                        \
-		liberror,                 \
+		elibcode,                 \
 		__func__,                 \
 		__LINE__,                 \
 		MDSO_ERROR_TOP_LEVEL      \

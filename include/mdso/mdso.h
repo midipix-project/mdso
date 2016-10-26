@@ -58,12 +58,15 @@ struct mdso_input {
 };
 
 struct mdso_error_info {
-	int				syserror;
-	int				liberror;
-	const char *			function;
-	int				line;
-	unsigned			flags;
-	void *				ctx;
+	const struct mdso_driver_ctx *	edctx;
+	const struct mdso_unit_ctx *	euctx;
+	const char *			eunit;
+	int				esyscode;
+	int				elibcode;
+	const char *			efunction;
+	int				eline;
+	unsigned			eflags;
+	void *				eany;
 };
 
 struct mdso_common_ctx {

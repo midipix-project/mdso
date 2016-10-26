@@ -19,13 +19,13 @@ static const char aclr_magenta[] = "\x1b[35m";
 
 static const char * mdso_output_error_header(const struct mdso_error_info * erri)
 {
-	if (erri->flags & MDSO_ERROR_CHILD)
+	if (erri->eflags & MDSO_ERROR_CHILD)
 		return "exec error upon";
 
-	else if (erri->flags & MDSO_ERROR_TOP_LEVEL)
+	else if (erri->eflags & MDSO_ERROR_TOP_LEVEL)
 		return "error logged in";
 
-	else if (erri->flags & MDSO_ERROR_NESTED)
+	else if (erri->eflags & MDSO_ERROR_NESTED)
 		return "< returned to >";
 
 	else
@@ -34,20 +34,20 @@ static const char * mdso_output_error_header(const struct mdso_error_info * erri
 
 static const char * mdso_output_strerror(const struct mdso_error_info * erri)
 {
-	if (erri->flags & MDSO_ERROR_CUSTOM)
+	if (erri->eflags & MDSO_ERROR_CUSTOM)
 		return "flow error: unexpected condition or other";
 
-	else if (erri->flags & MDSO_ERROR_NESTED)
+	else if (erri->eflags & MDSO_ERROR_NESTED)
 		return "";
 
-	else if (erri->flags & MDSO_ERROR_CHILD)
+	else if (erri->eflags & MDSO_ERROR_CHILD)
 		return "(see child process error messages)";
 
-	else if (erri->syserror == ENOBUFS)
+	else if (erri->esyscode == ENOBUFS)
 		return "input error: string length exceeds buffer size.";
 
 	else
-		return strerror(erri->syserror);
+		return strerror(erri->esyscode);
 }
 
 static int mdso_output_error_record_plain(
@@ -59,8 +59,8 @@ static int mdso_output_error_record_plain(
 	if (fprintf(stderr,"%s: %s %s(), line %d%s%s.\n",
 			dctx->program,
 			mdso_output_error_header(erri),
-			erri->function,
-			erri->line,
+			erri->efunction,
+			erri->eline,
 			strlen(errdesc) ? ": " : "",
 			errdesc) < 0)
 		return -1;
@@ -87,11 +87,11 @@ static int mdso_output_error_record_annotated(
 			aclr_reset,
 
 			aclr_bold,aclr_blue,
-			erri->function,
+			erri->efunction,
 			aclr_reset,
 
 			aclr_bold,aclr_green,
-			erri->line,
+			erri->eline,
 			aclr_reset,
 			strlen(errdesc) ? ": " : "",
 
