@@ -17,6 +17,16 @@ static const char aclr_green[]   = "\x1b[32m";
 static const char aclr_blue[]    = "\x1b[34m";
 static const char aclr_magenta[] = "\x1b[35m";
 
+static const char const * const mdso_error_strings[MDSO_ERR_CAP] = {
+	[MDSO_ERR_FLOW_ERROR]       = "flow error: unexpected condition or other",
+	[MDSO_ERR_FLEE_ERROR]       = "flees and bugs and cats and mice",
+	[MDSO_ERR_NULL_CONTEXT]     = "null driver or unit context",
+	[MDSO_ERR_NULL_SOURCE]      = "source file does not define any symbols",
+	[MDSO_ERR_INVALID_CONTEXT]  = "invalid driver or unit context",
+	[MDSO_ERR_INVALID_SOURCE]   = "invalid symbol definition source file",
+	[MDSO_ERR_SOURCE_SIZE_ZERO] = "cannot map an empty symbol definition source file",
+};
+
 static const char * mdso_output_error_header(const struct mdso_error_info * erri)
 {
 	if (erri->eflags & MDSO_ERROR_CHILD)
@@ -35,7 +45,9 @@ static const char * mdso_output_error_header(const struct mdso_error_info * erri
 static const char * mdso_output_strerror(const struct mdso_error_info * erri)
 {
 	if (erri->eflags & MDSO_ERROR_CUSTOM)
-		return "flow error: unexpected condition or other";
+		return ((erri->elibcode < 0) || (erri->elibcode >= MDSO_ERR_CAP))
+			? "internal error: please report to the maintainer"
+			: mdso_error_strings[erri->elibcode];
 
 	else if (erri->eflags & MDSO_ERROR_NESTED)
 		return "";
