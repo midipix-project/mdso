@@ -44,6 +44,16 @@ extern "C" {
 #define MDSO_ERROR_CHILD		0x0004
 #define MDSO_ERROR_CUSTOM		0x0008
 
+enum mdso_custom_error {
+	MDSO_ERR_FLOW_ERROR,
+	MDSO_ERR_FLEE_ERROR,
+	MDSO_ERR_NULL_CONTEXT,
+	MDSO_ERR_NULL_SOURCE,
+	MDSO_ERR_INVALID_CONTEXT,
+	MDSO_ERR_INVALID_SOURCE,
+	MDSO_ERR_SOURCE_SIZE_ZERO,
+	MDSO_ERR_CAP,
+};
 
 struct mdso_source_version {
 	int		major;
