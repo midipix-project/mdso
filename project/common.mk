@@ -1,11 +1,10 @@
-COMMON_SRCS = \
+API_SRCS = \
 	src/crc/mdso_crc64.c \
 	src/crc/mdso_crc32.c \
 	src/driver/mdso_amain.c \
 	src/driver/mdso_driver_ctx.c \
 	src/driver/mdso_unit_ctx.c \
 	src/helper/mdso_create_asm_source.c \
-	src/internal/mdso_errinfo_impl.c \
 	src/logic/mdso_create_implib_sources.c \
 	src/logic/mdso_generate_dsometa.c \
 	src/logic/mdso_generate_symentry.c \
@@ -15,5 +14,10 @@ COMMON_SRCS = \
 	src/output/mdso_output_export_symbols.c \
 	src/skin/mdso_skin_default.c \
 
+INTERNAL_SRCS = \
+	src/internal/$(PACKAGE)_errinfo_impl.c \
+
 APP_SRCS = \
 	src/mdso.c
+
+COMMON_SRCS = $(API_SRCS) $(INTERNAL_SRCS)
