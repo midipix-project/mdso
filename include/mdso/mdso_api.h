@@ -19,9 +19,9 @@
 
 /* mdso_api */
 #ifndef MDSO_APP
-#if     defined (MDSO_BUILD)
+#if     defined (MDSO_EXPORT)
 #define mdso_api mdso_export
-#elif   defined (MDSO_SHARED)
+#elif   defined (MDSO_IMPORT)
 #define mdso_api mdso_import
 #elif   defined (MDSO_STATIC)
 #define mdso_api
