@@ -54,7 +54,7 @@ static uint32_t mdso_argv_flags(uint32_t flags)
 static int mdso_driver_usage(
 	const char *			program,
 	const char *			arg,
-	const struct argv_option *	options,
+	const struct argv_option **	optv,
 	struct argv_meta *		meta)
 {
 	char header[512];
@@ -63,7 +63,7 @@ static int mdso_driver_usage(
 		"Usage: %s [options] <file>...\n" "Options:\n",
 		program);
 
-	argv_usage(stdout,header,options,arg);
+	argv_usage(stdout,header,optv,arg);
 	argv_free(meta);
 
 	return MDSO_USAGE;
@@ -152,7 +152,7 @@ int mdso_get_driver_ctx(
 {
 	struct mdso_driver_ctx_impl *	ctx;
 	struct mdso_common_ctx		cctx;
-	const struct argv_option *	options;
+	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
 	struct argv_meta *		meta;
 	struct argv_entry *		entry;
 	size_t				nunits;
@@ -164,9 +164,9 @@ int mdso_get_driver_ctx(
 
 	(void)envp;
 
-	options = mdso_default_options;
+	argv_optv_init(mdso_default_options,optv);
 
-	if (!(meta = argv_get(argv,options,mdso_argv_flags(flags))))
+	if (!(meta = argv_get(argv,optv,mdso_argv_flags(flags))))
 		return -1;
 
 	nunits	= 0;
@@ -178,7 +178,7 @@ int mdso_get_driver_ctx(
 	cctx.drvflags = flags;
 
 	if (!argv[1] && (flags & MDSO_DRIVER_VERBOSITY_USAGE))
-		return mdso_driver_usage(program,0,options,meta);
+		return mdso_driver_usage(program,0,optv,meta);
 
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
@@ -186,7 +186,7 @@ int mdso_get_driver_ctx(
 			switch (entry->tag) {
 				case TAG_HELP:
 					if (flags & MDSO_DRIVER_VERBOSITY_USAGE)
-						return mdso_driver_usage(program,entry->arg,options,meta);
+						return mdso_driver_usage(program,entry->arg,optv,meta);
 
 				case TAG_VERSION:
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
@@ -226,7 +226,7 @@ int mdso_get_driver_ctx(
 	}
 
 	if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
-		return mdso_driver_usage(program,0,options,meta);
+		return mdso_driver_usage(program,0,optv,meta);
 
 	if (pretty && !strcmp(pretty,"yaml"))
 		cctx.fmtflags |= MDSO_PRETTY_YAML;
@@ -261,12 +261,15 @@ int mdso_create_driver_ctx(
 	const struct mdso_common_ctx *	cctx,
 	struct mdso_driver_ctx **	pctx)
 {
+	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl *	ctx;
 	int				fddst  = -1;
 	char *				argv[] = {"mdso_driver",0};
 
-	if (!(meta = argv_get(argv,mdso_default_options,0)))
+	argv_optv_init(mdso_default_options,optv);
+
+	if (!(meta = argv_get(argv,optv,0)))
 		return -1;
 
 	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)

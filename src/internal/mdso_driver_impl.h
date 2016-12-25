@@ -8,6 +8,8 @@
 #include <mdso/mdso.h>
 #include "argv/argv.h"
 
+#define MDSO_OPTV_ELEMENTS 64
+
 extern const struct argv_option mdso_default_options[];
 
 enum app_tags {
