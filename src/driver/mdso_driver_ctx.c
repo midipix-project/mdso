@@ -193,7 +193,10 @@ int mdso_get_driver_ctx(
 					break;
 
 				case TAG_QUAD_PTR:
-					cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+					if (!(strcmp(entry->arg,"64")))
+						cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+					else
+						cctx.drvflags &= ~(uint64_t)MDSO_DRIVER_QUAD_PTR;
 					break;
 
 				case TAG_LIBPATH:
