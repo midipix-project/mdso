@@ -11,13 +11,12 @@
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
-	"\t.file     \"__%s_sym_fn.s\"\n",
 	"\t.section  .text\n",
-	"\t.globl    %s\n",
-	"\t.def      %s; .scl 2; .type 32; .endef\n\n",
+	"\t.globl    %s%s\n",
+	"\t.def      %s%s; .scl 2; .type 32; .endef\n\n",
 
-	"%s:\n",
-	"\tjmp *__imp_%s\n\n",
+	"%s%s:\n",
+	"\tjmp *__imp_%s%s\n\n",
 	0
 };
 
@@ -27,9 +26,16 @@ int mdso_generate_symfn(
 	FILE *				fout)
 {
 	const char * const * line;
+	const char *         uscore;
+
+	if (fprintf(fout,"\t.file     \"__%s_sym_fn.s\"\n",sym) < 0)
+		return MDSO_FILE_ERROR(dctx);
+
+	uscore = (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR)
+		? "" : "_";
 
 	for (line=asm_lines; *line; line++)
-		if ((fprintf(fout,*line,sym)) < 0)
+		if (fprintf(fout,*line,uscore,sym) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
 	return 0;
