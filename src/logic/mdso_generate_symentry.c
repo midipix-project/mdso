@@ -12,16 +12,12 @@
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
-	"\t.file     \"__%s_sym_entry.s\"\n",
-
 	"\t.section  " MDSO_STRS_SECTION ",\"r\"\n",
 	"\t.globl    .__dsostr_%s\n",
 	"\t.balign   2\n\n",
 	".__dsostr_%s:\n",
 	"\t.ascii\t\"%s\\0\"\n\n"
-
 	"\t.section  " MDSO_SYMS_SECTION ",\"r\"\n",
-	"\t.globl    __imp_%s\n",
 	0
 };
 
@@ -33,23 +29,32 @@ int mdso_generate_symentry(
 	const char * const *	line;
 	const char *		alignstr;
 	const char *		ptrsize;
+	const char *		uscore;
+
+	if (fprintf(fout,"\t.file     \"__%s_sym_entry.s\"\n",sym) < 0)
+		return MDSO_FILE_ERROR(dctx);
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		alignstr = "\t.balign   16\n\n";
 		ptrsize  = ".quad";
+		uscore   = "";
 	} else {
 		alignstr = "\t.balign   8\n\n";
 		ptrsize  = ".long";
+		uscore   = "_";
 	}
 
 	for (line=asm_lines; *line; line++)
 		if ((fprintf(fout,*line,sym)) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
+	if (fprintf(fout,"\t.globl    __imp_%s%s\n",uscore,sym) < 0)
+		return MDSO_FILE_ERROR(dctx);
+
 	if ((fputs(alignstr,fout)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"__imp_%s:\n",sym)) < 0)
+	if ((fprintf(fout,"__imp_%s%s:\n",uscore,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"\t%s\t.__dsostr_%s\n",ptrsize,sym)) < 0)
