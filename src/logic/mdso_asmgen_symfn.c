@@ -20,7 +20,7 @@ static const char * const asm_lines[] = {
 	0
 };
 
-int mdso_generate_symfn(
+int mdso_asmgen_symfn(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
 	FILE *				fout)

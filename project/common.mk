@@ -6,9 +6,9 @@ API_SRCS = \
 	src/driver/mdso_unit_ctx.c \
 	src/helper/mdso_create_asm_source.c \
 	src/logic/mdso_create_implib_sources.c \
-	src/logic/mdso_generate_dsometa.c \
-	src/logic/mdso_generate_symentry.c \
-	src/logic/mdso_generate_symfn.c \
+	src/logic/mdso_asmgen_dsometa.c \
+	src/logic/mdso_asmgen_symentry.c \
+	src/logic/mdso_asmgen_symfn.c \
 	src/logic/mdso_map_input.c \
 	src/output/mdso_output_error.c \
 	src/output/mdso_output_export_symbols.c \

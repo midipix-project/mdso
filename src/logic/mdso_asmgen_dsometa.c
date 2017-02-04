@@ -38,7 +38,7 @@ static const char * const asm_libname_fmt =
 	"._name:\n"
 	"\t.ascii\t\"%s\\0\"\n\n";
 
-int mdso_generate_dsometa(
+int mdso_asmgen_dsometa(
 	const struct mdso_driver_ctx *	dctx,
 	FILE *				fout)
 {
