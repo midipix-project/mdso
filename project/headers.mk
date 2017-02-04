@@ -12,5 +12,6 @@ INTERNAL_HEADERS = \
 	$(PROJECT_DIR)/src/internal/perk/perk_structs.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_driver_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_errinfo_impl.h \
+	$(PROJECT_DIR)/src/internal/$(PACKAGE)_object_impl.h \
 
 ALL_HEADERS = $(API_HEADERS) $(INTERNAL_HEADERS)
