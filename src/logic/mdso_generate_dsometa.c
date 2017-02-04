@@ -32,6 +32,13 @@ static const char * const asm_meta_lines[] = {
 	0
 };
 
+static const char * const asm_libname_fmt =
+	"\n\n"
+	"\t.section  " MDSO_STRS_SECTION ",\"r\"\n"
+	"\t.balign   2\n\n"
+	"._name:\n"
+	"\t.ascii\t\"%s\\0\"\n\n";
+
 int mdso_generate_dsometa(
 	const struct mdso_driver_ctx *	dctx,
 	FILE *				fout)
@@ -61,12 +68,18 @@ int mdso_generate_dsometa(
 	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
+	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,"._name")) < 0)
+		return MDSO_FILE_ERROR(dctx);
+
 	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	for (line=asm_meta_lines; *line; line++)
 		if ((fprintf(fout,*line,ptrsize)) < 0)
 			return MDSO_FILE_ERROR(dctx);
+
+	if (fprintf(fout,asm_libname_fmt,dctx->cctx->libname) < 0)
+		return MDSO_FILE_ERROR(dctx);
 
 	return 0;
 }

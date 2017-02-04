@@ -32,6 +32,7 @@ struct mdso_sym_entry {
 
 struct mdso_meta_table {
 	void *				base;
+	const char *			name;
 	uint32_t			flags;
 	uint32_t			priority;
 	uint32_t			nsyms;
