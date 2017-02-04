@@ -34,8 +34,7 @@ static const char * const asm_meta_lines[] = {
 
 static const char * const asm_libname_fmt =
 	"\n\n"
-	"\t.section  " MDSO_STRS_SECTION ",\"r\"\n"
-	"\t.balign   2\n\n"
+	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n\n"
 	"._name:\n"
 	"\t.ascii\t\"%s\\0\"\n\n";
 

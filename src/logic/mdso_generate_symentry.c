@@ -12,9 +12,8 @@
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
-	"\t.section  " MDSO_STRS_SECTION ",\"r\"\n",
-	"\t.globl    .__dsostr_%s\n",
-	"\t.balign   2\n\n",
+	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n",
+	"\t.globl    .__dsostr_%s\n\n",
 	".__dsostr_%s:\n",
 	"\t.ascii\t\"%s\\0\"\n\n"
 	"\t.section  " MDSO_SYMS_SECTION ",\"r\"\n",
