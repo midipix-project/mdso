@@ -8,6 +8,8 @@ API_HEADERS = \
 
 INTERNAL_HEADERS = \
 	$(PROJECT_DIR)/src/internal/argv/argv.h \
+	$(PROJECT_DIR)/src/internal/perk/perk_consts.h \
+	$(PROJECT_DIR)/src/internal/perk/perk_structs.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_driver_impl.h \
 	$(PROJECT_DIR)/src/internal/$(PACKAGE)_errinfo_impl.h \
 
