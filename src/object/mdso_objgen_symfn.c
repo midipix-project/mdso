@@ -222,5 +222,8 @@ int mdso_objgen_symfn(
 		if (fwrite(symfn,objlen,1,fout) == 0)
 			return MDSO_FILE_ERROR(dctx);
 
+	if (!vobj)
+		free(symfn);
+
 	return 0;
 }
