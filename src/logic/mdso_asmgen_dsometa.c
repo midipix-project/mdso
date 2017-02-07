@@ -15,7 +15,7 @@ static const char * const asm_hdr_lines[] = {
 	"\t.file     \"__%s_dso_meta.s\"\n",
 
 	"\t.section  " MDSO_META_SECTION ",\"r\"\n",
-	"\t.globl    .__dsometa_%s\n",
+	"\t.globl    .dsometa_%s\n",
 	0
 };
 
@@ -35,7 +35,7 @@ static const char * const asm_meta_lines[] = {
 static const char * const asm_libname_fmt =
 	"\n\n"
 	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n\n"
-	"._name:\n"
+	".name:\n"
 	"\t.ascii\t\"%s\\0\"\n\n";
 
 int mdso_asmgen_dsometa(
@@ -61,13 +61,13 @@ int mdso_asmgen_dsometa(
 	if ((fputs(alignstr,fout)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,".__dsometa_%s:\n",dctx->cctx->libname)) < 0)
+	if ((fprintf(fout,".dsometa_%s:\n",dctx->cctx->libname)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,"._name")) < 0)
+	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,".name")) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)

@@ -13,7 +13,7 @@
 
 static const char * const asm_lines[] = {
 	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n\n",
-	".__dsostr_%s:\n",
+	".symstr:\n",
 	"\t.ascii\t\"%s\\0\"\n\n"
 	"\t.section  " MDSO_SYMS_SECTION ",\"r\"\n",
 	0
@@ -55,10 +55,10 @@ int mdso_asmgen_symentry(
 	if ((fprintf(fout,"__imp_%s%s:\n",uscore,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t.__dsostr_%s\n",ptrsize,sym)) < 0)
+	if ((fprintf(fout,"\t%s\t.symstr\n",ptrsize)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t.__dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
+	if ((fprintf(fout,"\t%s\t.dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	return 0;
