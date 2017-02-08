@@ -50,9 +50,7 @@ static void mdso_perform_unit_actions(
 	struct mdso_driver_ctx * dctx,
 	struct mdso_unit_ctx *   uctx)
 {
-        uint64_t flags = uctx->cctx->fmtflags;
-
-        if (flags & MDSO_OUTPUT_EXPORT_SYMS)
+	if (uctx->cctx->fmtflags & MDSO_OUTPUT_EXPORT_SYMS)
 		mdso_output_export_symbols(
 			dctx,uctx,stdout);
 }
@@ -80,15 +78,15 @@ int mdso_main(int argc, char ** argv, char ** envp)
 		if ((mdso_version(dctx)) < 0)
 			return mdso_exit(dctx,MDSO_ERROR);
 
+	if (dctx->cctx->drvflags & MDSO_DRIVER_GENERATE_ASM)
+		mdso_create_implib_sources(dctx);
+
 	for (unit=dctx->units; *unit && !dctx->errv[0]; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
 			mdso_perform_unit_actions(dctx,uctx);
 			mdso_free_unit_ctx(uctx);
 		}
 	}
-
-	if (*dctx->units && !dctx->errv[0])
-		mdso_create_implib_sources(dctx);
 
 	return mdso_exit(dctx,dctx->errv[0] ? MDSO_ERROR : MDSO_OK);
 }

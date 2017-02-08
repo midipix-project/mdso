@@ -192,6 +192,10 @@ int mdso_get_driver_ctx(
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
 					break;
 
+				case TAG_ASM:
+					cctx.drvflags |= MDSO_DRIVER_GENERATE_ASM;
+					break;
+
 				case TAG_QUAD_PTR:
 					if (!(strcmp(entry->arg,"64")))
 						cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;

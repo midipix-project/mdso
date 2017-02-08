@@ -8,6 +8,9 @@ const struct argv_option mdso_default_options[] = {
 	{"help",		'h',TAG_HELP,ARGV_OPTARG_OPTIONAL,0,"short|long",0,
 				"show usage information [listing %s options only]"},
 
+	{"asm",			'a',TAG_ASM,ARGV_OPTARG_NONE,0,0,0,
+				"generate assembly sources"},
+
 	{"machine",		'm',TAG_QUAD_PTR,ARGV_OPTARG_REQUIRED,0,"32|64",0,
 				"set machine bits to %s"},
 

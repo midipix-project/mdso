@@ -15,6 +15,7 @@ extern const struct argv_option mdso_default_options[];
 enum app_tags {
 	TAG_HELP,
 	TAG_VERSION,
+	TAG_ASM,
 	TAG_QUAD_PTR,
 	TAG_LIBPATH,
 	TAG_LIBNAME,
