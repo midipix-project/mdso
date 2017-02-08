@@ -15,22 +15,19 @@
 #include "mdso_driver_impl.h"
 #include "mdso_errinfo_impl.h"
 
-FILE * mdso_create_asm_source(
+static FILE * mdso_create_output(
 	const struct mdso_driver_ctx *	dctx,
-	const char *			asmname)
+	const char *			name)
 {
 	struct mdso_driver_ctx_impl *	ictx;
 	uintptr_t			addr;
 	int				fdout;
 	FILE *				fout;
 
-	if (!dctx->cctx->dstdir)
-		return stdout;
-
 	addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
 	ictx = (struct mdso_driver_ctx_impl *)addr;
 
-	if ((fdout = openat(ictx->fddst,asmname,
+	if ((fdout = openat(ictx->fddst,name,
                         O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
                         S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0) {
 		MDSO_SYSTEM_ERROR(dctx);
@@ -44,4 +41,26 @@ FILE * mdso_create_asm_source(
 	}
 
 	return fout;
+}
+
+FILE * mdso_create_asm_source(
+	const struct mdso_driver_ctx *	dctx,
+	const char *			asmname)
+{
+	if (!dctx->cctx->dstdir)
+		return stdout;
+
+	return mdso_create_output(dctx,asmname);
+}
+
+FILE * mdso_create_object(
+	const struct mdso_driver_ctx *	dctx,
+	const char *			objname)
+{
+	if (!dctx->cctx->dstdir) {
+		MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_DSTDIR);
+		return 0;
+	}
+
+	return mdso_create_output(dctx,objname);
 }

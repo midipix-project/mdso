@@ -11,6 +11,9 @@ const struct argv_option mdso_default_options[] = {
 	{"asm",			'a',TAG_ASM,ARGV_OPTARG_NONE,0,0,0,
 				"generate assembly sources"},
 
+	{"obj",			'b',TAG_OBJ,ARGV_OPTARG_NONE,0,0,0,
+				"generate objects"},
+
 	{"machine",		'm',TAG_QUAD_PTR,ARGV_OPTARG_REQUIRED,0,"32|64",0,
 				"set machine bits to %s"},
 

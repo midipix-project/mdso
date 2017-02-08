@@ -34,6 +34,7 @@ extern "C" {
 #define MDSO_DRIVER_DRY_RUN		0x0020
 #define MDSO_DRIVER_QUAD_PTR		0x0040
 #define MDSO_DRIVER_GENERATE_ASM	0x0100
+#define MDSO_DRIVER_GENERATE_OBJECTS	0x0200
 
 #define MDSO_DRIVER_ANNOTATE_ALWAYS	0x1000
 #define MDSO_DRIVER_ANNOTATE_NEVER	0x2000
@@ -51,6 +52,7 @@ enum mdso_custom_error {
 	MDSO_ERR_NULL_CONTEXT,
 	MDSO_ERR_NULL_SOURCE,
 	MDSO_ERR_INVALID_DATA,
+	MDSO_ERR_INVALID_DSTDIR,
 	MDSO_ERR_INVALID_CONTEXT,
 	MDSO_ERR_INVALID_SOURCE,
 	MDSO_ERR_SOURCE_SIZE_ZERO,
@@ -134,10 +136,12 @@ mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* helper api */
 mdso_api FILE*mdso_create_asm_source	(const struct mdso_driver_ctx *, const char * asmname);
+mdso_api FILE*mdso_create_object	(const struct mdso_driver_ctx *, const char * objname);
 
 /* utility api */
 mdso_api int  mdso_main			(int, char **, char **);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
+mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);
 mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);
 mdso_api int  mdso_output_error_record	(const struct mdso_driver_ctx *, const struct mdso_error_info *);
 mdso_api int  mdso_output_error_vector	(const struct mdso_driver_ctx *);

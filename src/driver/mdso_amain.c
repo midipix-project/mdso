@@ -81,6 +81,9 @@ int mdso_main(int argc, char ** argv, char ** envp)
 	if (dctx->cctx->drvflags & MDSO_DRIVER_GENERATE_ASM)
 		mdso_create_implib_sources(dctx);
 
+	if (dctx->cctx->drvflags & MDSO_DRIVER_GENERATE_OBJECTS)
+		mdso_create_implib_objects(dctx);
+
 	for (unit=dctx->units; *unit && !dctx->errv[0]; unit++) {
 		if (!(mdso_get_unit_ctx(dctx,*unit,&uctx))) {
 			mdso_perform_unit_actions(dctx,uctx);
