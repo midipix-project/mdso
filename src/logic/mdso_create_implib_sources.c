@@ -51,7 +51,7 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 			return MDSO_NESTED_ERROR(dctx);
 
 		for (sym=uctx->syms; *sym; sym++) {
-			mdso_init_asmname(asmname,"__%s_sym_entry.s",*sym);
+			mdso_init_asmname(asmname,".%s_symentry.s",*sym);
 
 			if (!(fout = mdso_create_asm_source(dctx,asmname)))
 				return MDSO_NESTED_ERROR(dctx);

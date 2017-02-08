@@ -29,7 +29,7 @@ int mdso_asmgen_symentry(
 	const char *		ptrsize;
 	const char *		uscore;
 
-	if (fprintf(fout,"\t.file     \"__%s_sym_entry.s\"\n",sym) < 0)
+	if (fprintf(fout,"\t.file     \".%s_symentry.s\"\n",sym) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
