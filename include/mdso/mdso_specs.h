@@ -45,4 +45,35 @@ struct mdso_meta_record {
 	void *				fnr2;
 };
 
+
+struct mdso_meta_record_m32 {
+	uint32_t			base;
+	uint32_t			name;
+	uint32_t			flags;
+	uint32_t			priority;
+	uint32_t			nsyms;
+	uint32_t			padding;
+	uint32_t			hashtbl;
+	uint32_t			symtbl;
+	uint32_t			fncarg;
+	uint32_t			fncargarr;
+	uint32_t			fnr1;
+	uint32_t			fnr2;
+};
+
+struct mdso_meta_record_m64 {
+	uint64_t			base;
+	uint64_t			name;
+	uint32_t			flags;
+	uint32_t			priority;
+	uint32_t			nsyms;
+	uint32_t			padding;
+	uint64_t			hashtbl;
+	uint64_t			symtbl;
+	uint64_t			fncarg;
+	uint64_t			fncargarr;
+	uint64_t			fnr1;
+	uint64_t			fnr2;
+};
+
 #endif

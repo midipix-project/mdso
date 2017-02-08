@@ -147,6 +147,7 @@ mdso_api uint64_t mdso_crc64_mbstr	(const unsigned char * str, size_t * symlen);
 mdso_api int      mdso_asmgen_dsometa	(const struct mdso_driver_ctx *, FILE * fout);
 mdso_api int      mdso_asmgen_symentry	(const struct mdso_driver_ctx *, const char * sym, FILE * fout);
 mdso_api int      mdso_asmgen_symfn	(const struct mdso_driver_ctx *, const char * sym, FILE * fout);
+mdso_api int      mdso_objgen_dsometa	(const struct mdso_driver_ctx *, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symentry	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symfn	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
 
