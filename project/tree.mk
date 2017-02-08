@@ -8,4 +8,5 @@ tree.tag:
 		mkdir -p src/object
 		mkdir -p src/output
 		mkdir -p src/skin
+		mkdir -p src/util
 		touch tree.tag
