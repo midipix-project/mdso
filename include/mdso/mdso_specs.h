@@ -30,7 +30,7 @@ struct mdso_sym_entry {
 	struct mdso_meta_table *	meta;
 };
 
-struct mdso_meta_table {
+struct mdso_meta_record {
 	void *				base;
 	const char *			name;
 	uint32_t			flags;
