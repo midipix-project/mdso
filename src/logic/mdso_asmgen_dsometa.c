@@ -12,7 +12,7 @@
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_hdr_lines[] = {
-	"\t.file     \"__%s_dso_meta.s\"\n",
+	"\t.file     \".dsometa_%s.s\"\n",
 
 	"\t.section  " MDSO_META_SECTION ",\"r\"\n",
 	"\t.globl    .dsometa_%s\n",
