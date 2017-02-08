@@ -20,22 +20,22 @@ static const char * const asm_hdr_lines[] = {
 };
 
 static const char * const asm_meta_lines[] = {
-	"\t.long\t0	# priority\n",
-	"\t.long\t0	# nsyms\n",
-	"\t.long\t0	# padding\n",
-	"\t%s\t0	# hashtbl\n",
-	"\t%s\t0	# symtbl\n",
-	"\t%s\t0	# fncarg\n",
-	"\t%s\t0	# fncargarr\n",
-	"\t%s\t0	# fnr1\n",
-	"\t%s\t0	# fnr2\n",
+	"\t.long\t0\t\t# priority\n",
+	"\t.long\t0\t\t# nsyms\n",
+	"\t.long\t0\t\t# padding\n",
+	"\t%s\t0\t\t# hashtbl\n",
+	"\t%s\t0\t\t# symtbl\n",
+	"\t%s\t0\t\t# fncarg\n",
+	"\t%s\t0\t\t# fncargarr\n",
+	"\t%s\t0\t\t# fnr1\n",
+	"\t%s\t0\t\t# fnr2\n",
 	0
 };
 
 static const char * const asm_libname_fmt =
 	"\n\n"
 	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n\n"
-	".name:\n"
+	".libname:\n"
 	"\t.ascii\t\"%s\\0\"\n\n";
 
 int mdso_asmgen_dsometa(
@@ -64,13 +64,13 @@ int mdso_asmgen_dsometa(
 	if ((fprintf(fout,".dsometa_%s:\n",dctx->cctx->libname)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%d\t# base\n",ptrsize,0)) < 0)
+	if ((fprintf(fout,"\t%s\t%d\t\t# base\n",ptrsize,0)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,".name")) < 0)
+	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,".libname")) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%u\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
+	if ((fprintf(fout,"\t%s\t%u\t\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	for (line=asm_meta_lines; *line; line++)
