@@ -28,7 +28,7 @@ int mdso_asmgen_symfn(
 	const char * const * line;
 	const char *         uscore;
 
-	if (fprintf(fout,"\t.file     \"__%s_sym_fn.s\"\n",sym) < 0)
+	if (fprintf(fout,"\t.file     \".%s_symfn.s\"\n",sym) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	uscore = (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR)

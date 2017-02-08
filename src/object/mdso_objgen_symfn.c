@@ -155,12 +155,12 @@ int mdso_objgen_symfn(
 	mdso_obj_write_long(&symrec[1].cs_name[4],cstoff+datoff);
 
 	memcpy(symrec[0].cs_name,".file",5);
-	memcpy(&mark[0],"__",2);
-	memcpy(&mark[2],sym,symlen);
-	memcpy(&mark[2+symlen],"_sym_fn.s",9);
+	memcpy(&mark[0],".",1);
+	memcpy(&mark[1],sym,symlen);
+	memcpy(&mark[1+symlen],"_symfn.s",8);
 
-	datoff += 12 + symlen;
-	mark   += 12 + symlen;
+	datoff += 10 + symlen;
+	mark   += 10 + symlen;
 	symrec += 2;
 
 	/* coff symbol: .text */
