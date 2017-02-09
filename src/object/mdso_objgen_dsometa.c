@@ -38,7 +38,7 @@ int mdso_objgen_dsometa(
 	struct mdso_dsometa_object *	dsometa;
 	struct pe_raw_coff_symbol *	symrec;
 	unsigned char *			mark;
-	struct pe_aux_rec_section *	aux;
+	struct pe_raw_aux_rec_section *	aux;
 	size_t				buflen;
 	uint32_t			liblen;
 	uint32_t			cstlen;
@@ -173,7 +173,7 @@ int mdso_objgen_dsometa(
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	memcpy(symrec[0].cs_name,".dsostrs",8);
 
-	aux = (struct pe_aux_rec_section *)&symrec[1];
+	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,liblen+1);
 	mdso_obj_write_short(aux->aux_num_of_relocs,0);
 
@@ -188,7 +188,7 @@ int mdso_objgen_dsometa(
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	memcpy(symrec[0].cs_name,".dsometa",8);
 
-	aux = (struct pe_aux_rec_section *)&symrec[1];
+	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,reclen);
 	mdso_obj_write_short(aux->aux_num_of_relocs,1);
 

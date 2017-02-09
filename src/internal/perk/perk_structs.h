@@ -340,7 +340,7 @@ struct pe_raw_coff_reloc {
 };
 
 
-struct pe_aux_rec_section {
+struct pe_raw_aux_rec_section {
 	unsigned char	aux_size			[0x04];		/* 0x00 */
 	unsigned char	aux_num_of_relocs		[0x02];		/* 0x04 */
 	unsigned char	aux_num_of_line_nums		[0x02];		/* 0x06 */

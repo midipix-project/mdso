@@ -38,7 +38,7 @@ int mdso_objgen_symentry(
 	struct mdso_symentry_object *	syment;
 	struct pe_raw_coff_symbol *	symrec;
 	unsigned char *			mark;
-	struct pe_aux_rec_section *	aux;
+	struct pe_raw_aux_rec_section *	aux;
 	size_t				buflen;
 	size_t				liblen;
 	uint32_t			symlen;
@@ -175,7 +175,7 @@ int mdso_objgen_symentry(
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	memcpy(symrec[0].cs_name,".dsostrs",8);
 
-	aux = (struct pe_aux_rec_section *)&symrec[1];
+	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,symlen+1);
 	mdso_obj_write_short(aux->aux_num_of_relocs,0);
 
@@ -190,7 +190,7 @@ int mdso_objgen_symentry(
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	memcpy(symrec[0].cs_name,".dsosyms",8);
 
-	aux = (struct pe_aux_rec_section *)&symrec[1];
+	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,2*relrva);
 	mdso_obj_write_short(aux->aux_num_of_relocs,2);
 

@@ -53,7 +53,7 @@ int mdso_objgen_symfn(
 	struct pe_raw_coff_symbol *	symrec;
 	const unsigned char *		code;
 	unsigned char *			mark;
-	struct pe_aux_rec_section *	aux;
+	struct pe_raw_aux_rec_section *	aux;
 	size_t				buflen;
 	uint32_t			symlen;
 	uint32_t			cstlen;
@@ -170,7 +170,7 @@ int mdso_objgen_symfn(
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	memcpy(symrec[0].cs_name,".text",5);
 
-	aux = (struct pe_aux_rec_section *)&symrec[1];
+	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,relrva+4);
 	mdso_obj_write_short(aux->aux_num_of_relocs,1);
 
