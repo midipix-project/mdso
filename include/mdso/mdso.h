@@ -55,6 +55,7 @@ enum mdso_custom_error {
 	MDSO_ERR_INVALID_DSTDIR,
 	MDSO_ERR_INVALID_CONTEXT,
 	MDSO_ERR_INVALID_SOURCE,
+	MDSO_ERR_INVALID_VECTOR,
 	MDSO_ERR_SOURCE_SIZE_ZERO,
 	MDSO_ERR_CAP,
 };
@@ -74,7 +75,7 @@ struct mdso_input {
 struct mdso_object {
 	void *		addr;
 	size_t		size;
-	void *		mapstrs;
+	char *		mapstrs;
 	uint32_t	mapstrsnum;
 	uint32_t	mapstrslen;
 	uint32_t	arhdrpos;
@@ -155,6 +156,7 @@ mdso_api int      mdso_asmgen_symfn	(const struct mdso_driver_ctx *, const char 
 mdso_api int      mdso_objgen_dsometa	(const struct mdso_driver_ctx *, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symentry	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symfn	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
+mdso_api int      mdso_argen_common	(const struct mdso_driver_ctx *, const char ** symv, FILE * fout, struct mdso_object *);
 
 #ifdef __cplusplus
 }

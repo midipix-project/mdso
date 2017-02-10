@@ -1,4 +1,5 @@
 API_SRCS = \
+	src/archive/mdso_argen_common.c \
 	src/crc/mdso_crc64.c \
 	src/crc/mdso_crc32.c \
 	src/driver/mdso_amain.c \

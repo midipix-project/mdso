@@ -70,6 +70,8 @@ int mdso_objgen_dsometa(
 
 	if (vobj && !vobj->addr) {
 		vobj->size = objlen;
+		vobj->mapstrsnum = 1;
+		vobj->mapstrslen = 10 + liblen;
 		return 0;
 	}
 
@@ -216,6 +218,10 @@ int mdso_objgen_dsometa(
 
 	memcpy(&mark[0],".dsometa_",9);
 	memcpy(&mark[9],dctx->cctx->libname,liblen);
+
+	/* archive symbol map */
+	if (vobj && vobj->mapstrs)
+		memcpy(vobj->mapstrs,mark,9+liblen);
 
 	/* .libname */
 	mark = dsometa->hdr.cfh_machine;

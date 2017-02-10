@@ -38,6 +38,7 @@ int mdso_objgen_symentry(
 	struct mdso_symentry_object *	syment;
 	struct pe_raw_coff_symbol *	symrec;
 	unsigned char *			mark;
+	unsigned char *			mapsym;
 	struct pe_raw_aux_rec_section *	aux;
 	size_t				buflen;
 	size_t				liblen;
@@ -57,6 +58,7 @@ int mdso_objgen_symentry(
 	uint32_t			cstoff;
 	uint32_t			datoff;
 	uint32_t			stroff;
+	uint32_t			uscore;
 
 	if ((buflen = strlen(sym)) > 1024*1024)
 		return MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_DATA);
@@ -67,12 +69,15 @@ int mdso_objgen_symentry(
 	symlen = (uint32_t)buflen;
 	cstlen = (uint32_t)liblen + (3 * symlen) + 64;
 	objlen = sizeof(*syment) + cstlen;
+	uscore = !(dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR);
 
 	if (vobj && vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
 	if (vobj && !vobj->addr) {
 		vobj->size = objlen;
+		vobj->mapstrsnum = 1;
+		vobj->mapstrslen = 7 + uscore + symlen;
 		return 0;
 	}
 
@@ -210,6 +215,7 @@ int mdso_objgen_symentry(
 	symrec += 1;
 
 	/* coff symbol: __imp_sym */
+	mapsym = mark;
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
 	symrec[0].cs_num_of_aux_symbols[0] = 0;
 
@@ -230,6 +236,10 @@ int mdso_objgen_symentry(
 	datoff += 7 + symlen;
 	mark   += 7 + symlen;
 	symrec += 1;
+
+	/* archive symbol map */
+	if (vobj && vobj->mapstrs)
+		memcpy(vobj->mapstrs,mapsym,mark-mapsym);
 
 	/* coff symbol: .dsometa_libname */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;

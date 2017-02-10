@@ -27,6 +27,7 @@ static const char const * const mdso_error_strings[MDSO_ERR_CAP] = {
 	[MDSO_ERR_INVALID_DSTDIR]   = "invalid destination directory",
 	[MDSO_ERR_INVALID_CONTEXT]  = "invalid driver or unit context",
 	[MDSO_ERR_INVALID_SOURCE]   = "invalid symbol definition source file",
+	[MDSO_ERR_INVALID_VECTOR]   = "invalid symbol vector, or vector too long",
 	[MDSO_ERR_SOURCE_SIZE_ZERO] = "cannot map an empty symbol definition source file",
 };
 

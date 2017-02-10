@@ -1,5 +1,6 @@
 tree.tag:
 		mkdir -p src
+		mkdir -p src/archive
 		mkdir -p src/crc
 		mkdir -p src/driver
 		mkdir -p src/helper
