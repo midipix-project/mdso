@@ -8,6 +8,9 @@ const struct argv_option mdso_default_options[] = {
 	{"help",		'h',TAG_HELP,ARGV_OPTARG_OPTIONAL,0,"short|long",0,
 				"show usage information [listing %s options only]"},
 
+	{"implib",		'i',TAG_IMPLIB,ARGV_OPTARG_REQUIRED,0,0,"<path>",
+				"create an import library archive"},
+
 	{"asm",			'a',TAG_ASM,ARGV_OPTARG_NONE,0,0,0,
 				"generate assembly sources"},
 

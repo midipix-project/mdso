@@ -51,6 +51,7 @@ enum mdso_custom_error {
 	MDSO_ERR_FLEE_ERROR,
 	MDSO_ERR_NULL_CONTEXT,
 	MDSO_ERR_NULL_SOURCE,
+	MDSO_ERR_INVALID_NAME,
 	MDSO_ERR_INVALID_DATA,
 	MDSO_ERR_INVALID_DSTDIR,
 	MDSO_ERR_INVALID_CONTEXT,
@@ -99,6 +100,7 @@ struct mdso_common_ctx {
 	uint64_t			actflags;
 	uint64_t			fmtflags;
 	uint32_t			dsoflags;
+	const char *			implib;
 	const char *			libname;
 	const char *			asmbase;
 	const char *			dstdir;
@@ -136,11 +138,13 @@ mdso_api int  mdso_map_input		(const struct mdso_driver_ctx *, int fd, const cha
 mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* helper api */
+mdso_api FILE*mdso_create_archive	(const struct mdso_driver_ctx *, const char * arname);
 mdso_api FILE*mdso_create_asm_source	(const struct mdso_driver_ctx *, const char * asmname);
 mdso_api FILE*mdso_create_object	(const struct mdso_driver_ctx *, const char * objname);
 
 /* utility api */
 mdso_api int  mdso_main			(int, char **, char **);
+mdso_api int  mdso_create_implib_archive(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);
 mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);

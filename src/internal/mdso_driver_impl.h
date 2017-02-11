@@ -18,6 +18,7 @@ enum app_tags {
 	TAG_ASM,
 	TAG_OBJ,
 	TAG_QUAD_PTR,
+	TAG_IMPLIB,
 	TAG_LIBPATH,
 	TAG_LIBNAME,
 	TAG_DSTDIR,
@@ -34,6 +35,7 @@ struct mdso_driver_ctx_impl {
 	struct mdso_common_ctx          cctx;
 	struct mdso_driver_ctx          ctx;
 	char *                          asmbase;
+	char *				implib;
 	int                             fddst;
 	int                             fdtmpin;
 	const struct mdso_unit_ctx *    euctx;

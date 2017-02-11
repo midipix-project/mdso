@@ -131,11 +131,15 @@ static int mdso_dstdir_open(const struct mdso_common_ctx * cctx, const char * as
 
 static int mdso_get_driver_ctx_fail(
 	struct argv_meta *	meta,
+	char *			implib,
 	char *			asmbase,
 	int			fddst)
 {
 	if (fddst >= 0)
 		close(fddst);
+
+	if (implib)
+		free(implib);
 
 	if (asmbase)
 		free(asmbase);
@@ -158,6 +162,7 @@ int mdso_get_driver_ctx(
 	size_t				nunits;
 	const char *			program;
 	const char *			pretty;
+	char *				implib;
 	char *				asmbase;
 	char *				dot;
 	int				fddst;
@@ -171,6 +176,7 @@ int mdso_get_driver_ctx(
 
 	nunits	= 0;
 	pretty	= 0;
+	implib  = 0;
 	asmbase = 0;
 	fddst	= -1;
 	program = argv_program_name(argv[0]);
@@ -205,6 +211,10 @@ int mdso_get_driver_ctx(
 						cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
 					else
 						cctx.drvflags &= ~(uint64_t)MDSO_DRIVER_QUAD_PTR;
+					break;
+
+				case TAG_IMPLIB:
+					cctx.implib = entry->arg;
 					break;
 
 				case TAG_LIBPATH:
@@ -245,18 +255,22 @@ int mdso_get_driver_ctx(
 	if (!cctx.libname)
 		cctx.libname = "win32any";
 
+	if (cctx.implib && !(implib = strdup(cctx.implib)))
+		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
+
 	if (!(asmbase = strdup(cctx.libname)))
-		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+		return mdso_get_driver_ctx_fail(meta,implib,0,fddst);
 
 	if ((dot = strchr(asmbase,'.')))
 		*dot = '\0';
 
 	if (cctx.dstdir && (fddst = mdso_dstdir_open(&cctx,asmbase)) < 0)
-		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,&cctx,nunits)))
-		return mdso_get_driver_ctx_fail(meta,asmbase,fddst);
+		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
 
+	ctx->implib		= implib;
 	ctx->asmbase		= asmbase;
 	ctx->cctx.asmbase	= asmbase;
 
@@ -284,10 +298,10 @@ int mdso_create_driver_ctx(
 		return -1;
 
 	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)
-		return mdso_get_driver_ctx_fail(meta,0,fddst);
+		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,cctx,0)))
-		return mdso_get_driver_ctx_fail(meta,0,fddst);
+		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
 
 	ctx->ctx.cctx = &ctx->cctx;
 	*pctx = &ctx->ctx;
@@ -304,6 +318,9 @@ static void mdso_free_driver_ctx_impl(struct mdso_driver_ctx_alloc * ictx)
 
 	if (ictx->ctx.asmbase)
 		free(ictx->ctx.asmbase);
+
+	if (ictx->ctx.implib)
+		free(ictx->ctx.implib);
 
 	argv_free(ictx->meta);
 	free(ictx);

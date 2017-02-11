@@ -23,6 +23,7 @@ static const char const * const mdso_error_strings[MDSO_ERR_CAP] = {
 	[MDSO_ERR_FLEE_ERROR]       = "flees and bugs and cats and mice",
 	[MDSO_ERR_NULL_CONTEXT]     = "null driver or unit context",
 	[MDSO_ERR_NULL_SOURCE]      = "source file does not define any symbols",
+	[MDSO_ERR_INVALID_NAME]     = "invalid or missing import library archive name",
 	[MDSO_ERR_INVALID_DATA]     = "invalid data (symbol name too long)",
 	[MDSO_ERR_INVALID_DSTDIR]   = "invalid destination directory",
 	[MDSO_ERR_INVALID_CONTEXT]  = "invalid driver or unit context",

@@ -17,7 +17,8 @@
 
 static FILE * mdso_create_output(
 	const struct mdso_driver_ctx *	dctx,
-	const char *			name)
+	const char *			name,
+	int				fdat)
 {
 	struct mdso_driver_ctx_impl *	ictx;
 	uintptr_t			addr;
@@ -26,8 +27,9 @@ static FILE * mdso_create_output(
 
 	addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
 	ictx = (struct mdso_driver_ctx_impl *)addr;
+	fdat = (fdat == AT_FDCWD) ? AT_FDCWD : ictx->fddst;
 
-	if ((fdout = openat(ictx->fddst,name,
+	if ((fdout = openat(fdat,name,
                         O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
                         S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0) {
 		MDSO_SYSTEM_ERROR(dctx);
@@ -43,6 +45,13 @@ static FILE * mdso_create_output(
 	return fout;
 }
 
+FILE * mdso_create_archive(
+	const struct mdso_driver_ctx *	dctx,
+	const char *			arname)
+{
+	return mdso_create_output(dctx,arname,AT_FDCWD);
+}
+
 FILE * mdso_create_asm_source(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			asmname)
@@ -50,7 +59,7 @@ FILE * mdso_create_asm_source(
 	if (!dctx->cctx->dstdir)
 		return stdout;
 
-	return mdso_create_output(dctx,asmname);
+	return mdso_create_output(dctx,asmname,-1);
 }
 
 FILE * mdso_create_object(
@@ -62,5 +71,5 @@ FILE * mdso_create_object(
 		return 0;
 	}
 
-	return mdso_create_output(dctx,objname);
+	return mdso_create_output(dctx,objname,-1);
 }

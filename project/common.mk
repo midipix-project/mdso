@@ -16,6 +16,7 @@ API_SRCS = \
 	src/output/mdso_output_error.c \
 	src/output/mdso_output_export_symbols.c \
 	src/skin/mdso_skin_default.c \
+	src/util/mdso_create_implib_archive.c \
 	src/util/mdso_create_implib_objects.c \
 	src/util/mdso_create_implib_sources.c \
 

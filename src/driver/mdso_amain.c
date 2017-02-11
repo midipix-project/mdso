@@ -78,6 +78,9 @@ int mdso_main(int argc, char ** argv, char ** envp)
 		if ((mdso_version(dctx)) < 0)
 			return mdso_exit(dctx,MDSO_ERROR);
 
+	if (dctx->cctx->implib)
+		mdso_create_implib_archive(dctx);
+
 	if (dctx->cctx->drvflags & MDSO_DRIVER_GENERATE_ASM)
 		mdso_create_implib_sources(dctx);
 
