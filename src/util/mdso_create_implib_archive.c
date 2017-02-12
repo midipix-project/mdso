@@ -12,7 +12,7 @@
 #include <mdso/mdso.h>
 #include "mdso_errinfo_impl.h"
 
-static void mdso_free_uctx_vector(struct mdso_unit_ctx ** uctxv)
+static void mdso_free_uctx_vector(struct mdso_unit_ctx ** uctxv, FILE * fout)
 {
 	struct mdso_unit_ctx **	puctx;
 
@@ -20,6 +20,7 @@ static void mdso_free_uctx_vector(struct mdso_unit_ctx ** uctxv)
 		mdso_free_unit_ctx(*puctx);
 
 	free(uctxv);
+	fclose(fout);
 }
 
 static int mdso_symcmp(const void * src, const void * dst)
@@ -43,18 +44,18 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 	if (!dctx->cctx->implib)
 		return MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_NAME);
 
-	if (!(fout = mdso_create_archive(dctx,dctx->cctx->implib)))
-		return MDSO_NESTED_ERROR(dctx);
-
 	for (unit=dctx->units; *unit; unit++)
 		(void)0;
 
 	if (!(uctxv = calloc(++unit - dctx->units,sizeof(*uctxv))))
 		return MDSO_SYSTEM_ERROR(dctx);
 
+	if (!(fout = mdso_create_archive(dctx,dctx->cctx->implib)))
+		return MDSO_NESTED_ERROR(dctx);
+
 	for (puctx=uctxv,unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,puctx)) {
-			mdso_free_uctx_vector(uctxv);
+			mdso_free_uctx_vector(uctxv,fout);
 			return MDSO_NESTED_ERROR(dctx);
 		}
 	}
@@ -68,7 +69,7 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 		symv = asym;
 
 	} else if (!(symv = calloc(nsym+1,sizeof(const char *)))) {
-		mdso_free_uctx_vector(uctxv);
+		mdso_free_uctx_vector(uctxv,fout);
 		return MDSO_SYSTEM_ERROR(dctx);
 	}
 
@@ -78,12 +79,11 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 
 	qsort(symv,nsym,sizeof(*symv),mdso_symcmp);
 	ret = mdso_argen_common(dctx,symv,fout,0);
-	fclose(fout);
 
 	if (symv != asym)
 		free(symv);
 
-	mdso_free_uctx_vector(uctxv);
+	mdso_free_uctx_vector(uctxv,fout);
 
 	return ret ? MDSO_NESTED_ERROR(dctx) : 0;
 }
