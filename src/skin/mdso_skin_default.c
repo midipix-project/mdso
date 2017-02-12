@@ -11,6 +11,9 @@ const struct argv_option mdso_default_options[] = {
 	{"implib",		'i',TAG_IMPLIB,ARGV_OPTARG_REQUIRED,0,0,"<path>",
 				"create an import library archive"},
 
+	{"libname",		'n',TAG_LIBNAME,ARGV_OPTARG_REQUIRED,0,0,"<libname>",
+				"set dependency library name to %s"},
+
 	{"asm",			'a',TAG_ASM,ARGV_OPTARG_NONE,0,0,0,
 				"generate assembly sources"},
 
@@ -26,9 +29,6 @@ const struct argv_option mdso_default_options[] = {
 				"or according to the library path in the process PEB block (peb); "
 				"alternatively, the loader may only search for the library "
 				"in the system library directory (system32)."},
-
-	{"libname",		'n',TAG_LIBNAME,ARGV_OPTARG_REQUIRED,0,0,"<libname>",
-				"set dependency library name to %s"},
 
 	{"dstdir",		'd',TAG_DSTDIR,ARGV_OPTARG_REQUIRED,0,0,"<dstdir>",
 				"save generated assembly files under %s"},
