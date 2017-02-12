@@ -33,19 +33,8 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 	const char * const *	sym;
 	int			ret;
 
-	mdso_init_asmname(asmname,".dsometa_%s.s",dctx->cctx->libname);
 
-	if (!(fout = mdso_create_asm_source(dctx,asmname)))
-		return MDSO_NESTED_ERROR(dctx);
-
-	ret = mdso_asmgen_dsometa(dctx,fout);
-
-	if (fout != stdout)
-		fclose(fout);
-
-	if (ret < 0)
-		return MDSO_NESTED_ERROR(dctx);
-
+	/* symentry, symfn */
 	for (unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,&uctx))
 			return MDSO_NESTED_ERROR(dctx);
@@ -81,5 +70,16 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 		mdso_free_unit_ctx(uctx);
 	}
 
-	return 0;
+	/* dsometa */
+	mdso_init_asmname(asmname,".dsometa_%s.s",dctx->cctx->libname);
+
+	if (!(fout = mdso_create_asm_source(dctx,asmname)))
+		return MDSO_NESTED_ERROR(dctx);
+
+	ret = mdso_asmgen_dsometa(dctx,fout);
+
+	if (fout != stdout)
+		fclose(fout);
+
+	return (ret < 0) ? MDSO_NESTED_ERROR(dctx) : 0;
 }
