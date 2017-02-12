@@ -22,6 +22,11 @@ static void mdso_free_uctx_vector(struct mdso_unit_ctx ** uctxv)
 	free(uctxv);
 }
 
+static int mdso_symcmp(const void * src, const void * dst)
+{
+	return strcmp(*(const char **)src,*(const char **)dst);
+}
+
 int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 {
 	int			ret;
@@ -71,6 +76,7 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 		for (dsym=puctx[0]->syms; *dsym; dsym++)
 			*psym++ = *dsym;
 
+	qsort(symv,nsym,sizeof(*symv),mdso_symcmp);
 	ret = mdso_argen_common(dctx,symv,fout,0);
 	fclose(fout);
 
