@@ -86,11 +86,11 @@ int  mdso_argen_common(
 	else if (!(aobj = calloc(1,nobj*sizeof(*aobj))))
 		return MDSO_SYSTEM_ERROR(dctx);
 
-	/* archive signature, archive header */
+	/* objlen: archive signature, index header */
 	objlen  = 8;
 	objlen += sizeof(struct pe_raw_archive_common_hdr);
 
-	/* archive meta */
+	/* objlen: member headers */
 	ret = mdso_objgen_dsometa(dctx,0,aobj);
 
 	aobj->size += 1;
@@ -98,8 +98,6 @@ int  mdso_argen_common(
 	aobj->size ^= 1;
 
 	objlen += aobj->size;
-	objlen += aobj->mapstrslen;
-	objlen += sizeof(uint32_t) * aobj->mapstrsnum;
 	objlen += sizeof(struct pe_raw_archive_common_hdr);
 
 	mapstrslen = aobj->mapstrslen;
@@ -113,8 +111,6 @@ int  mdso_argen_common(
 		pobj->size ^= 1;
 
 		objlen += pobj->size;
-		objlen += pobj->mapstrslen;
-		objlen += sizeof(uint32_t) * pobj->mapstrsnum;
 		objlen += sizeof(struct pe_raw_archive_common_hdr);
 
 		mapstrslen += pobj->mapstrslen;
@@ -128,8 +124,6 @@ int  mdso_argen_common(
 		pobj->size ^= 1;
 
 		objlen += pobj->size;
-		objlen += pobj->mapstrslen;
-		objlen += sizeof(uint32_t) * pobj->mapstrsnum;
 		objlen += sizeof(struct pe_raw_archive_common_hdr);
 
 		mapstrslen += pobj->mapstrslen;
@@ -143,10 +137,14 @@ int  mdso_argen_common(
 	if (ret)
 		return ret;
 
-	/* archive alignment */
+	/* index: string block alignment */
 	mapstrslen += 1;
 	mapstrslen |= 1;
 	mapstrslen ^= 1;
+
+	/* objlen: index size, padding */
+	objlen += sizeof(uint32_t) * (1 + mapstrsnum);
+	objlen += mapstrslen;
 
 	objlen += 15;
 	objlen |= 15;
