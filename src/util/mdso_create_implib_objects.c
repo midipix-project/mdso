@@ -50,16 +50,18 @@ mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 			if (ret < 0)
 				return MDSO_NESTED_ERROR(dctx);
 
-			mdso_init_objname(objname,".%s_symfn.o",*sym);
+			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
+				mdso_init_objname(objname,".%s_symfn.o",*sym);
 
-			if (!(fout = mdso_create_object(dctx,objname)))
-				return MDSO_NESTED_ERROR(dctx);
+				if (!(fout = mdso_create_object(dctx,objname)))
+					return MDSO_NESTED_ERROR(dctx);
 
-			ret = mdso_objgen_symfn(dctx,*sym,fout,0);
-			fclose(fout);
+				ret = mdso_objgen_symfn(dctx,*sym,fout,0);
+				fclose(fout);
 
-			if (ret < 0)
-				return MDSO_NESTED_ERROR(dctx);
+				if (ret < 0)
+					return MDSO_NESTED_ERROR(dctx);
+			}
 		}
 
 		mdso_free_unit_ctx(uctx);
