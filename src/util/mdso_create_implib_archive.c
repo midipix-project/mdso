@@ -59,7 +59,7 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 		return MDSO_NESTED_ERROR(dctx);
 
 	for (puctx=uctxv,unit=dctx->units; *unit; unit++) {
-		if (mdso_get_unit_ctx(dctx,*unit,puctx)) {
+		if (mdso_get_unit_ctx(dctx,*unit,puctx++)) {
 			mdso_free_uctx_vector(uctxv,0,0,fout);
 			return MDSO_NESTED_ERROR(dctx);
 		}
