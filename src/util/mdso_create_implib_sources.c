@@ -53,18 +53,20 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 			if (ret < 0)
 				return MDSO_NESTED_ERROR(dctx);
 
-			mdso_init_asmname(asmname,".%s_symfn.s",*sym);
+			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
+				mdso_init_asmname(asmname,".%s_symfn.s",*sym);
 
-			if (!(fout = mdso_create_asm_source(dctx,asmname)))
-				return MDSO_NESTED_ERROR(dctx);
+				if (!(fout = mdso_create_asm_source(dctx,asmname)))
+					return MDSO_NESTED_ERROR(dctx);
 
-			ret = mdso_asmgen_symfn(dctx,*sym,fout);
+				ret = mdso_asmgen_symfn(dctx,*sym,fout);
 
-			if (fout != stdout)
-				fclose(fout);
+				if (fout != stdout)
+					fclose(fout);
 
-			if (ret < 0)
-				return MDSO_NESTED_ERROR(dctx);
+				if (ret < 0)
+					return MDSO_NESTED_ERROR(dctx);
+			}
 		}
 
 		mdso_free_unit_ctx(uctx);
