@@ -165,7 +165,7 @@ mdso_api int      mdso_asmgen_symfn	(const struct mdso_driver_ctx *, const char 
 mdso_api int      mdso_objgen_dsometa	(const struct mdso_driver_ctx *, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symentry	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
 mdso_api int      mdso_objgen_symfn	(const struct mdso_driver_ctx *, const char * sym, FILE * fout, struct mdso_object *);
-mdso_api int      mdso_argen_common	(const struct mdso_driver_ctx *, const char ** symv, FILE * fout, struct mdso_object *);
+mdso_api int      mdso_argen_common	(const struct mdso_driver_ctx *, const char ** symv, const int * stype, FILE * fout, struct mdso_object *);
 
 #ifdef __cplusplus
 }

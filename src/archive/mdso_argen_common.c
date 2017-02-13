@@ -49,6 +49,7 @@ static void mdso_write_big_endian_long(unsigned char * ch, uint32_t val)
 int  mdso_argen_common(
 	const struct mdso_driver_ctx *	dctx,
 	const char **			symv,
+	const int *			stype,
 	FILE *				fout,
 	struct mdso_object *		vobj)
 {
@@ -56,6 +57,7 @@ int  mdso_argen_common(
 	const char **				psym;
 	int					nsym;
 	int					nobj;
+	int					ndata;
 	uint32_t				objlen;
 	uint32_t				hdrlen;
 	uint32_t				mapstrsnum;
@@ -74,10 +76,10 @@ int  mdso_argen_common(
 	/* init */
 	memset (sobj,0,sizeof(sobj));
 
-	for (nsym=0,psym=symv; *psym; psym++)
-		nsym++;
+	for (nsym=0,ndata=0,psym=symv; *psym; psym++,nsym++)
+		ndata += (stype[psym-symv] == MDSO_SYMBOL_TYPE_DATA);
 
-	if ((nobj = 2*nsym + 1) < 256)
+	if ((nobj = 1 + (2*nsym) - ndata) < 256)
 		aobj = sobj;
 
 	else if (nobj > 1024*1024)
@@ -104,18 +106,20 @@ int  mdso_argen_common(
 	mapstrsnum = aobj->mapstrsnum;
 
 	for (psym=symv,pobj=&aobj[1]; *psym && !ret; psym++) {
-		ret  = mdso_objgen_symfn(dctx,*psym,0,pobj);
+		if (stype[psym-symv] == MDSO_SYMBOL_TYPE_CODE) {
+			ret  = mdso_objgen_symfn(dctx,*psym,0,pobj);
 
-		pobj->size += 1;
-		pobj->size |= 1;
-		pobj->size ^= 1;
+			pobj->size += 1;
+			pobj->size |= 1;
+			pobj->size ^= 1;
 
-		objlen += pobj->size;
-		objlen += sizeof(struct pe_raw_archive_common_hdr);
+			objlen += pobj->size;
+			objlen += sizeof(struct pe_raw_archive_common_hdr);
 
-		mapstrslen += pobj->mapstrslen;
-		mapstrsnum += pobj->mapstrsnum;
-		pobj++;
+			mapstrslen += pobj->mapstrslen;
+			mapstrsnum += pobj->mapstrsnum;
+			pobj++;
+		}
 
 		ret |= mdso_objgen_symentry(dctx,*psym,0,pobj);
 
@@ -213,29 +217,31 @@ int  mdso_argen_common(
 	/* archive symfn and symentry objects */
 	for (psym=symv,pobj=&aobj[1]; *psym && !ret; psym++) {
 		/* symfn object */
-		pobj->mapstrs  = mapstrs;
-		pobj->arhdrpos = (uint32_t)(mark - ar);
-		pobj->arhdrlen = sizeof(struct pe_raw_archive_common_hdr);
-		pobj->addr     = &mark[pobj->arhdrlen];
+		if (stype[psym-symv] == MDSO_SYMBOL_TYPE_CODE) {
+			pobj->mapstrs  = mapstrs;
+			pobj->arhdrpos = (uint32_t)(mark - ar);
+			pobj->arhdrlen = sizeof(struct pe_raw_archive_common_hdr);
+			pobj->addr     = &mark[pobj->arhdrlen];
 
-		for (symidx=0; symidx<pobj->mapstrsnum; symidx++) {
-			mdso_write_big_endian_long(idx,pobj->arhdrpos);
-			idx += sizeof(uint32_t);
+			for (symidx=0; symidx<pobj->mapstrsnum; symidx++) {
+				mdso_write_big_endian_long(idx,pobj->arhdrpos);
+				idx += sizeof(uint32_t);
+			}
+
+			ret = mdso_objgen_symfn(dctx,*psym,0,pobj);
+
+			sprintf(
+				objname,"f%06zu.o",
+				psym - symv);
+
+			mdso_argen_common_hdr(
+				(struct pe_raw_archive_common_hdr *)mark,
+				objname,pobj->size);
+
+			mark    += pobj->arhdrlen + pobj->size;
+			mapstrs += pobj->mapstrslen;
+			pobj++;
 		}
-
-		ret = mdso_objgen_symfn(dctx,*psym,0,pobj);
-
-		sprintf(
-			objname,"f%06zu.o",
-			psym - symv);
-
-		mdso_argen_common_hdr(
-			(struct pe_raw_archive_common_hdr *)mark,
-			objname,pobj->size);
-
-		mark    += pobj->arhdrlen + pobj->size;
-		mapstrs += pobj->mapstrslen;
-		pobj++;
 
 
 		/* symentry object */

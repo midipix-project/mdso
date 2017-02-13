@@ -12,20 +12,25 @@
 #include <mdso/mdso.h>
 #include "mdso_errinfo_impl.h"
 
-static void mdso_free_uctx_vector(struct mdso_unit_ctx ** uctxv, FILE * fout)
+static void mdso_free_uctx_vector(
+	struct mdso_unit_ctx **	uctxv,
+	const char **		symv,
+	int *			stype,
+	FILE *			fout)
 {
 	struct mdso_unit_ctx **	puctx;
+
+	if (symv)
+		free(symv);
+
+	if (stype)
+		free(stype);
 
 	for (puctx=uctxv; *puctx; puctx++)
 		mdso_free_unit_ctx(*puctx);
 
 	free(uctxv);
 	fclose(fout);
-}
-
-static int mdso_symcmp(const void * src, const void * dst)
-{
-	return strcmp(*(const char **)src,*(const char **)dst);
 }
 
 int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
@@ -39,7 +44,7 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 	const char **		unit;
 	const char **		psym;
 	const char **		symv;
-	const char *		asym[512];
+	int *			stype;
 
 	if (!dctx->cctx->implib)
 		return MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_NAME);
@@ -55,7 +60,7 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 
 	for (puctx=uctxv,unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,puctx)) {
-			mdso_free_uctx_vector(uctxv,fout);
+			mdso_free_uctx_vector(uctxv,0,0,fout);
 			return MDSO_NESTED_ERROR(dctx);
 		}
 	}
@@ -64,26 +69,25 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 		for (dsym=puctx[0]->syms; *dsym; dsym++)
 			nsym++;
 
-	if (nsym < 512) {
-		memset(asym,0,sizeof(asym));
-		symv = asym;
-
-	} else if (!(symv = calloc(nsym+1,sizeof(const char *)))) {
-		mdso_free_uctx_vector(uctxv,fout);
+	if (!(symv = calloc(nsym+1,sizeof(const char *)))) {
+		mdso_free_uctx_vector(uctxv,0,0,fout);
 		return MDSO_SYSTEM_ERROR(dctx);
 	}
 
-	for (psym=symv,puctx=uctxv; *puctx; puctx++)
-		for (dsym=puctx[0]->syms; *dsym; dsym++)
+	if (!(stype = calloc(nsym+1,sizeof(int)))) {
+		mdso_free_uctx_vector(uctxv,symv,0,fout);
+		return MDSO_SYSTEM_ERROR(dctx);
+	}
+
+	for (psym=symv,puctx=uctxv; *puctx; puctx++) {
+		for (dsym=puctx[0]->syms; *dsym; dsym++) {
+			stype[psym-symv] = puctx[0]->stype[dsym-puctx[0]->syms];
 			*psym++ = *dsym;
+		}
+	}
 
-	qsort(symv,nsym,sizeof(*symv),mdso_symcmp);
-	ret = mdso_argen_common(dctx,symv,fout,0);
-
-	if (symv != asym)
-		free(symv);
-
-	mdso_free_uctx_vector(uctxv,fout);
+	ret = mdso_argen_common(dctx,symv,stype,fout,0);
+	mdso_free_uctx_vector(uctxv,symv,stype,fout);
 
 	return ret ? MDSO_NESTED_ERROR(dctx) : 0;
 }
