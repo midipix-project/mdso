@@ -40,6 +40,10 @@ extern "C" {
 #define MDSO_DRIVER_ANNOTATE_NEVER	0x2000
 #define MDSO_DRIVER_ANNOTATE_FULL	0x4000
 
+/* symbol characteristics */
+#define MDSO_SYMBOL_TYPE_CODE		0x0001
+#define MDSO_SYMBOL_TYPE_DATA		0x0002
+
 /* error flags */
 #define MDSO_ERROR_TOP_LEVEL		0x0001
 #define MDSO_ERROR_NESTED		0x0002
@@ -120,6 +124,7 @@ struct mdso_unit_ctx {
 	const struct mdso_input *	map;
 	const struct mdso_common_ctx *	cctx;
 	const char * const *		syms;
+	const int const *		stype;
 	void *				any;
 };
 

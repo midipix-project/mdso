@@ -28,6 +28,7 @@ enum app_tags {
 
 struct mdso_expsyms {
 	char *		buffer;
+	int *		stype;
 	const char *	syms[];
 };
 
