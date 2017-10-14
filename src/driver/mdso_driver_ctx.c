@@ -174,14 +174,18 @@ int mdso_get_driver_ctx(
 	if (!(meta = argv_get(argv,optv,mdso_argv_flags(flags))))
 		return -1;
 
+	/* cctx init, option defaults */
+	memset(&cctx,0,sizeof(cctx));
+
 	nunits	= 0;
 	pretty	= 0;
 	implib  = 0;
 	asmbase = 0;
 	fddst	= -1;
 	program = argv_program_name(argv[0]);
-	memset(&cctx,0,sizeof(cctx));
+
 	cctx.drvflags = flags;
+	cctx.dsoflags = MDSO_FLAG_LOADER_PATH;
 
 	if (!argv[1] && (flags & MDSO_DRIVER_VERBOSITY_USAGE))
 		return mdso_driver_usage(program,0,optv,meta);
@@ -302,6 +306,9 @@ int mdso_create_driver_ctx(
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,cctx,0)))
 		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
+
+	if (!ctx->cctx.dsoflags)
+		ctx->cctx.dsoflags = MDSO_FLAG_LOADER_PATH;
 
 	ctx->ctx.cctx = &ctx->cctx;
 	*pctx = &ctx->ctx;
