@@ -7,6 +7,7 @@
 #define MDSO_SYMS_SECTION	".dsosyms"
 #define MDSO_STRS_SECTION	".dsostrs"
 #define MDSO_HASH_SECTION	".dsohash"
+#define MDSO_DATA_SECTION	".dsodata"
 
 #define MDSO_FLAG_LOADER_PATH	0x0001
 #define MDSO_FLAG_PEB_PATH	0x0002
