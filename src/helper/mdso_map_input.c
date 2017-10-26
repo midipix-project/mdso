@@ -41,9 +41,11 @@ int mdso_map_input(
 	if (ret < 0)
 		return MDSO_SYSTEM_ERROR(dctx);
 
-	else if (st.st_size == 0)
-		return MDSO_CUSTOM_ERROR(
-			dctx,MDSO_ERR_SOURCE_SIZE_ZERO);
+	if (st.st_size == 0) {
+		map->size = 0;
+		map->addr = 0;
+		return 0;
+	}
 
 	map->size = st.st_size;
 	map->addr = mmap(0,map->size,prot,MAP_PRIVATE,fd,0);
@@ -58,5 +60,5 @@ int mdso_map_input(
 
 int mdso_unmap_input(struct mdso_input * map)
 {
-	return munmap(map->addr,map->size);
+	return map->size ? munmap(map->addr,map->size) : 0;
 }
