@@ -159,6 +159,7 @@ int mdso_get_driver_ctx(
 	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
 	struct argv_meta *		meta;
 	struct argv_entry *		entry;
+	struct argv_entry *		machine;
 	size_t				nunits;
 	const char *			program;
 	const char *			pretty;
@@ -177,6 +178,7 @@ int mdso_get_driver_ctx(
 	/* cctx init, option defaults */
 	memset(&cctx,0,sizeof(cctx));
 
+	machine = 0;
 	nunits	= 0;
 	pretty	= 0;
 	implib  = 0;
@@ -211,6 +213,8 @@ int mdso_get_driver_ctx(
 					break;
 
 				case TAG_QUAD_PTR:
+					machine = entry;
+
 					if (!(strcmp(entry->arg,"64")))
 						cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
 					else
@@ -249,6 +253,17 @@ int mdso_get_driver_ctx(
 		} else
 			nunits++;
 	}
+
+
+	if (!machine && MDSO_DRIVER_PE_HOST && (sizeof(size_t) == 8))
+		cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+
+	else if (!machine && MDSO_DRIVER_WINNT_HOST && (sizeof(size_t) == 8))
+		cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+
+	else if (!machine && strstr(program,"64"))
+		cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
+
 
 	if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
 		return mdso_driver_usage(program,0,optv,meta);

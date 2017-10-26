@@ -8,6 +8,18 @@
 #include <mdso/mdso.h>
 #include "argv/argv.h"
 
+#ifdef  __PE_
+#define MDSO_DRIVER_PE_HOST	(1)
+#else
+#define MDSO_DRIVER_PE_HOST	(0)
+#endif
+
+#ifdef  __WINNT__
+#define MDSO_DRIVER_WINNT_HOST	(1)
+#else
+#define MDSO_DRIVER_WINNT_HOST	(0)
+#endif
+
 #define MDSO_OPTV_ELEMENTS 64
 
 extern const struct argv_option mdso_default_options[];
