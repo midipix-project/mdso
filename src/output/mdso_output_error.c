@@ -18,7 +18,7 @@ static const char aclr_green[]   = "\x1b[32m";
 static const char aclr_blue[]    = "\x1b[34m";
 static const char aclr_magenta[] = "\x1b[35m";
 
-static const char const * const mdso_error_strings[MDSO_ERR_CAP] = {
+static char const * const mdso_error_strings[MDSO_ERR_CAP] = {
 	[MDSO_ERR_FLOW_ERROR]       = "flow error: unexpected condition or other",
 	[MDSO_ERR_FLEE_ERROR]       = "flees and bugs and cats and mice",
 	[MDSO_ERR_NULL_CONTEXT]     = "null driver or unit context",
