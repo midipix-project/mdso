@@ -124,7 +124,7 @@ struct mdso_unit_ctx {
 	const struct mdso_input *	map;
 	const struct mdso_common_ctx *	cctx;
 	const char * const *		syms;
-	const int const *		stype;
+	const int *			stype;
 	void *				any;
 };
 
