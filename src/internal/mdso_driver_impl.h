@@ -8,7 +8,7 @@
 #include <mdso/mdso.h>
 #include "argv/argv.h"
 
-#ifdef  __PE_
+#ifdef  __PE__
 #define MDSO_DRIVER_PE_HOST	(1)
 #else
 #define MDSO_DRIVER_PE_HOST	(0)
