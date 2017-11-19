@@ -20,6 +20,10 @@
 #include "mdso_driver_impl.h"
 #include "argv/argv.h"
 
+#define MDSO_LOADER_FLAGS_MASK	(MDSO_FLAG_LOADER_PATH \
+				| MDSO_FLAG_PEB_PATH   \
+				| MDSO_FLAG_SYSTEM32)
+
 /* package info */
 static const struct mdso_source_version mdso_src_version = {
 	MDSO_TAG_VER_MAJOR,
@@ -226,6 +230,8 @@ int mdso_get_driver_ctx(
 					break;
 
 				case TAG_LIBPATH:
+					cctx.dsoflags &= ~(uint64_t)MDSO_LOADER_FLAGS_MASK;
+
 					if (!(strcmp(entry->arg,"loader")))
 						cctx.dsoflags |= MDSO_FLAG_LOADER_PATH;
 					if (!(strcmp(entry->arg,"peb")))
