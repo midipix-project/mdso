@@ -10,8 +10,9 @@
 #define MDSO_DATA_SECTION	".dsodata"
 
 #define MDSO_FLAG_LOADER_PATH	0x0001
-#define MDSO_FLAG_PEB_PATH	0x0002
-#define MDSO_FLAG_SYSTEM32	0x0004
+#define MDSO_FLAG_LDSO_LIB	0x0002
+#define MDSO_FLAG_PEB_PATH	0x0004
+#define MDSO_FLAG_SYSTEM32	0x0008
 
 struct mdso_arg;
 struct mdso_meta_table;

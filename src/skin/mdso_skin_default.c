@@ -23,12 +23,17 @@ const struct argv_option mdso_default_options[] = {
 	{"machine",		'm',TAG_QUAD_PTR,ARGV_OPTARG_REQUIRED,0,"32|64",0,
 				"set machine bits to %s"},
 
-	{"libpath",		'l',TAG_LIBPATH,ARGV_OPTARG_REQUIRED,0,"loader|peb|system32",0,
-				"runtime loader should search for the library either "
-				"according to its internal/inherited path (loader), "
-				"or according to the library path in the process PEB block (peb); "
-				"alternatively, the loader may only search for the library "
-				"in the system library directory (system32)."},
+	{"libpath",		'l',TAG_LIBPATH,ARGV_OPTARG_REQUIRED,0,
+				"loader|ldso|peb|system32",0,
+				"indicate that this is the runtime loader "
+				"itself (ldso); otherwise, specify that the "
+				"runtime loader should search for the library "
+				"either according to its internal/inherited "
+				"path (loader), or according to the library "
+				"path in the process PEB block (peb); "
+				"alternatively, the loader may only search "
+				"for the library in the system library "
+				"directory (system32)."},
 
 	{"dstdir",		'd',TAG_DSTDIR,ARGV_OPTARG_REQUIRED,0,0,"<dstdir>",
 				"save generated assembly files under %s"},

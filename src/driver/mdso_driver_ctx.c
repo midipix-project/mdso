@@ -21,6 +21,7 @@
 #include "argv/argv.h"
 
 #define MDSO_LOADER_FLAGS_MASK	(MDSO_FLAG_LOADER_PATH \
+				| MDSO_FLAG_LDSO_LIB   \
 				| MDSO_FLAG_PEB_PATH   \
 				| MDSO_FLAG_SYSTEM32)
 
@@ -234,9 +235,14 @@ int mdso_get_driver_ctx(
 
 					if (!(strcmp(entry->arg,"loader")))
 						cctx.dsoflags |= MDSO_FLAG_LOADER_PATH;
-					if (!(strcmp(entry->arg,"peb")))
+
+					else if (!(strcmp(entry->arg,"ldso")))
+						cctx.dsoflags |= MDSO_FLAG_LDSO_LIB;
+
+					else if (!(strcmp(entry->arg,"peb")))
 						cctx.dsoflags |= MDSO_FLAG_PEB_PATH;
-					if (!(strcmp(entry->arg,"system32")))
+
+					else if (!(strcmp(entry->arg,"system32")))
 						cctx.dsoflags |= MDSO_FLAG_SYSTEM32;
 					break;
 
