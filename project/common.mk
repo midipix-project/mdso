@@ -21,6 +21,7 @@ API_SRCS = \
 	src/util/mdso_create_implib_sources.c \
 
 INTERNAL_SRCS = \
+	src/internal/$(PACKAGE)_dprintf_impl.c \
 	src/internal/$(PACKAGE)_errinfo_impl.c \
 
 APP_SRCS = \
