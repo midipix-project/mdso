@@ -68,7 +68,7 @@ static int mdso_driver_usage(
 		"Usage: %s [options] <file>...\n" "Options:\n",
 		program);
 
-	argv_usage(stdout,header,optv,arg);
+	argv_usage(STDOUT_FILENO,header,optv,arg);
 	argv_free(meta);
 
 	return MDSO_USAGE;
@@ -177,7 +177,10 @@ int mdso_get_driver_ctx(
 
 	argv_optv_init(mdso_default_options,optv);
 
-	if (!(meta = argv_get(argv,optv,mdso_argv_flags(flags))))
+	if (!(meta = argv_get(
+			argv,optv,
+			mdso_argv_flags(flags),
+			STDERR_FILENO)))
 		return -1;
 
 	/* cctx init, option defaults */
@@ -325,7 +328,7 @@ int mdso_create_driver_ctx(
 
 	argv_optv_init(mdso_default_options,optv);
 
-	if (!(meta = argv_get(argv,optv,0)))
+	if (!(meta = argv_get(argv,optv,0,STDERR_FILENO)))
 		return -1;
 
 	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)
