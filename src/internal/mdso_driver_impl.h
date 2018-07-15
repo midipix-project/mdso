@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include <mdso/mdso.h>
+#include "mdso_dprintf_impl.h"
 #include "argv/argv.h"
 
 #ifdef  __PE__
