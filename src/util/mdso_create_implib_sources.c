@@ -42,7 +42,7 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 		for (sym=uctx->syms; *sym; sym++) {
 			mdso_init_asmname(asmname,".%s_symentry.s",*sym);
 
-			if (!(fout = mdso_create_asm_source(dctx,asmname)))
+			if (!(fout = mdso_create_asmsrc(dctx,asmname)))
 				return MDSO_NESTED_ERROR(dctx);
 
 			ret = mdso_asmgen_symentry(dctx,*sym,fout);
@@ -56,7 +56,7 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
 				mdso_init_asmname(asmname,".%s_symfn.s",*sym);
 
-				if (!(fout = mdso_create_asm_source(dctx,asmname)))
+				if (!(fout = mdso_create_asmsrc(dctx,asmname)))
 					return MDSO_NESTED_ERROR(dctx);
 
 				ret = mdso_asmgen_symfn(dctx,*sym,fout);
@@ -75,7 +75,7 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 	/* dsometa */
 	mdso_init_asmname(asmname,".dsometa_%s.s",dctx->cctx->libname);
 
-	if (!(fout = mdso_create_asm_source(dctx,asmname)))
+	if (!(fout = mdso_create_asmsrc(dctx,asmname)))
 		return MDSO_NESTED_ERROR(dctx);
 
 	ret = mdso_asmgen_dsometa(dctx,fout);

@@ -52,7 +52,7 @@ FILE * mdso_create_archive(
 	return mdso_create_output(dctx,arname,AT_FDCWD);
 }
 
-FILE * mdso_create_asm_source(
+FILE * mdso_create_asmsrc(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			asmname)
 {

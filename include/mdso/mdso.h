@@ -144,7 +144,7 @@ mdso_api int  mdso_unmap_input		(struct mdso_input *);
 
 /* helper api */
 mdso_api FILE*mdso_create_archive	(const struct mdso_driver_ctx *, const char * arname);
-mdso_api FILE*mdso_create_asm_source	(const struct mdso_driver_ctx *, const char * asmname);
+mdso_api FILE*mdso_create_asmsrc	(const struct mdso_driver_ctx *, const char * asmname);
 mdso_api FILE*mdso_create_object	(const struct mdso_driver_ctx *, const char * objname);
 
 /* utility api */
