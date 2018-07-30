@@ -57,6 +57,7 @@ static uint32_t mdso_argv_flags(uint32_t flags)
 }
 
 static int mdso_driver_usage(
+	int				fdout,
 	const char *			program,
 	const char *			arg,
 	const struct argv_option **	optv,
@@ -68,7 +69,7 @@ static int mdso_driver_usage(
 		"Usage: %s [options] <file>...\n" "Options:\n",
 		program);
 
-	argv_usage(STDOUT_FILENO,header,optv,arg);
+	argv_usage(fdout,header,optv,arg);
 	argv_free(meta);
 
 	return MDSO_USAGE;
@@ -76,6 +77,7 @@ static int mdso_driver_usage(
 
 static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 	struct argv_meta *		meta,
+	const struct mdso_fd_ctx *	fdctx,
 	const struct mdso_common_ctx *	cctx,
 	size_t				nunits)
 {
@@ -91,8 +93,8 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 	if (!(ictx = calloc(1,size)))
 		return 0;
 
-	if (cctx)
-		memcpy(&ictx->ctx.cctx,cctx,sizeof(*cctx));
+	memcpy(&ictx->ctx.fdctx,fdctx,sizeof(*fdctx));
+	memcpy(&ictx->ctx.cctx,cctx,sizeof(*cctx));
 
 	for (entry=meta->entries,units=ictx->units; entry->fopt || entry->arg; entry++)
 		if (!entry->fopt)
@@ -154,10 +156,11 @@ static int mdso_get_driver_ctx_fail(
 }
 
 int mdso_get_driver_ctx(
-	char **			argv,
-	char **			envp,
-	uint32_t		flags,
-	struct mdso_driver_ctx ** pctx)
+	char **				argv,
+	char **				envp,
+	uint32_t			flags,
+	const struct mdso_fd_ctx *	fdctx,
+	struct mdso_driver_ctx **	pctx)
 {
 	struct mdso_driver_ctx_impl *	ctx;
 	struct mdso_common_ctx		cctx;
@@ -175,12 +178,23 @@ int mdso_get_driver_ctx(
 
 	(void)envp;
 
+	if (!fdctx) {
+		fdctx = &(const struct mdso_fd_ctx) {
+			.fdin  = STDIN_FILENO,
+			.fdout = STDOUT_FILENO,
+			.fderr = STDERR_FILENO,
+			.fdlog = (-1),
+			.fdcwd = AT_FDCWD,
+			.fddst = AT_FDCWD,
+		};
+	}
+
 	argv_optv_init(mdso_default_options,optv);
 
 	if (!(meta = argv_get(
 			argv,optv,
 			mdso_argv_flags(flags),
-			STDERR_FILENO)))
+			fdctx->fderr)))
 		return -1;
 
 	/* cctx init, option defaults */
@@ -198,7 +212,10 @@ int mdso_get_driver_ctx(
 	cctx.dsoflags = MDSO_FLAG_LOADER_PATH;
 
 	if (!argv[1] && (flags & MDSO_DRIVER_VERBOSITY_USAGE))
-		return mdso_driver_usage(program,0,optv,meta);
+		return mdso_driver_usage(
+			fdctx->fderr,
+			program,0,
+			optv,meta);
 
 	/* get options, count units */
 	for (entry=meta->entries; entry->fopt || entry->arg; entry++) {
@@ -206,7 +223,11 @@ int mdso_get_driver_ctx(
 			switch (entry->tag) {
 				case TAG_HELP:
 					if (flags & MDSO_DRIVER_VERBOSITY_USAGE)
-						return mdso_driver_usage(program,entry->arg,optv,meta);
+						return mdso_driver_usage(
+							fdctx->fdout,
+							program,
+							entry->arg,
+							optv,meta);
 
 				case TAG_VERSION:
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
@@ -281,7 +302,10 @@ int mdso_get_driver_ctx(
 
 
 	if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
-		return mdso_driver_usage(program,0,optv,meta);
+		return mdso_driver_usage(
+			fdctx->fderr,
+			program,0,
+			optv,meta);
 
 	if (pretty && !strcmp(pretty,"yaml"))
 		cctx.fmtflags |= MDSO_PRETTY_YAML;
@@ -301,7 +325,7 @@ int mdso_get_driver_ctx(
 	if (cctx.dstdir && (fddst = mdso_dstdir_open(&cctx,asmbase)) < 0)
 		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
 
-	if (!(ctx = mdso_driver_ctx_alloc(meta,&cctx,nunits)))
+	if (!(ctx = mdso_driver_ctx_alloc(meta,fdctx,&cctx,nunits)))
 		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
 
 	ctx->implib		= implib;
@@ -318,6 +342,7 @@ int mdso_get_driver_ctx(
 
 int mdso_create_driver_ctx(
 	const struct mdso_common_ctx *	cctx,
+	const struct mdso_fd_ctx *	fdctx,
 	struct mdso_driver_ctx **	pctx)
 {
 	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
@@ -326,15 +351,26 @@ int mdso_create_driver_ctx(
 	int				fddst  = -1;
 	char *				argv[] = {"mdso_driver",0};
 
+	if (!fdctx) {
+		fdctx = &(const struct mdso_fd_ctx) {
+			.fdin  = STDIN_FILENO,
+			.fdout = STDOUT_FILENO,
+			.fderr = STDERR_FILENO,
+			.fdlog = (-1),
+			.fdcwd = AT_FDCWD,
+			.fddst = AT_FDCWD,
+		};
+	}
+
 	argv_optv_init(mdso_default_options,optv);
 
-	if (!(meta = argv_get(argv,optv,0,STDERR_FILENO)))
+	if (!(meta = argv_get(argv,optv,0,fdctx->fderr)))
 		return -1;
 
 	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)
 		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
 
-	if (!(ctx = mdso_driver_ctx_alloc(meta,cctx,0)))
+	if (!(ctx = mdso_driver_ctx_alloc(meta,fdctx,cctx,0)))
 		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
 
 	if (!ctx->cctx.dsoflags)
@@ -379,4 +415,41 @@ void mdso_free_driver_ctx(struct mdso_driver_ctx * ctx)
 const struct mdso_source_version * mdso_source_version(void)
 {
 	return &mdso_src_version;
+}
+
+
+int mdso_get_driver_fdctx(
+	const struct mdso_driver_ctx *	dctx,
+	struct mdso_fd_ctx *		fdctx)
+{
+	struct mdso_driver_ctx_impl *	ictx;
+
+	ictx = mdso_get_driver_ictx(dctx);
+
+	fdctx->fdin  = ictx->fdctx.fdin;
+	fdctx->fdout = ictx->fdctx.fdout;
+	fdctx->fderr = ictx->fdctx.fderr;
+	fdctx->fdlog = ictx->fdctx.fdlog;
+	fdctx->fdcwd = ictx->fdctx.fdcwd;
+	fdctx->fddst = ictx->fdctx.fddst;
+
+	return 0;
+}
+
+int mdso_set_driver_fdctx(
+	struct mdso_driver_ctx *	dctx,
+	const struct mdso_fd_ctx *	fdctx)
+{
+	struct mdso_driver_ctx_impl *	ictx;
+
+	ictx = mdso_get_driver_ictx(dctx);
+
+	ictx->fdctx.fdin  = fdctx->fdin;
+	ictx->fdctx.fdout = fdctx->fdout;
+	ictx->fdctx.fderr = fdctx->fderr;
+	ictx->fdctx.fdlog = fdctx->fdlog;
+	ictx->fdctx.fdcwd = fdctx->fdcwd;
+	ictx->fdctx.fddst = fdctx->fddst;
+
+	return 0;
 }

@@ -48,6 +48,7 @@ struct mdso_expsyms {
 struct mdso_driver_ctx_impl {
 	struct mdso_common_ctx          cctx;
 	struct mdso_driver_ctx          ctx;
+	struct mdso_fd_ctx		fdctx;
 	char *                          asmbase;
 	char *				implib;
 	int                             fddst;
@@ -91,6 +92,48 @@ static inline void mdso_driver_set_ectx(
 	ictx        = mdso_get_driver_ictx(dctx);
 	ictx->euctx = uctx;
 	ictx->eunit = unit;
+}
+
+static inline int mdso_driver_fdin(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fdin;
+}
+
+static inline int mdso_driver_fdout(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fdout;
+}
+
+static inline int mdso_driver_fderr(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fderr;
+}
+
+static inline int mdso_driver_fdlog(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fdlog;
+}
+
+static inline int mdso_driver_fdcwd(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fdcwd;
+}
+
+static inline int mdso_driver_fddst(const struct mdso_driver_ctx * dctx)
+{
+	struct mdso_fd_ctx fdctx;
+	mdso_get_driver_fdctx(dctx,&fdctx);
+	return fdctx.fddst;
 }
 
 #endif

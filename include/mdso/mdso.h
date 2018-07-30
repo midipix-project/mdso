@@ -77,6 +77,15 @@ struct mdso_source_version {
 	const char *	commit;
 };
 
+struct mdso_fd_ctx {
+	int		fdin;
+	int		fdout;
+	int		fderr;
+	int		fdlog;
+	int		fdcwd;
+	int		fddst;
+};
+
 struct mdso_object {
 	void *		addr;
 	size_t		size;
@@ -130,9 +139,11 @@ struct mdso_unit_ctx {
 
 /* driver api */
 mdso_api int  mdso_get_driver_ctx       (char ** argv, char ** envp, uint32_t flags,
+                                         const struct mdso_fd_ctx *,
                                          struct mdso_driver_ctx **);
 
 mdso_api int  mdso_create_driver_ctx    (const struct mdso_common_ctx *,
+                                         const struct mdso_fd_ctx *,
                                          struct mdso_driver_ctx **);
 
 mdso_api void mdso_free_driver_ctx      (struct mdso_driver_ctx *);
@@ -142,13 +153,16 @@ mdso_api int  mdso_get_unit_ctx         (const struct mdso_driver_ctx *, const c
 
 mdso_api void mdso_free_unit_ctx        (struct mdso_unit_ctx *);
 
+mdso_api int  mdso_get_driver_fdctx     (const struct mdso_driver_ctx *, struct mdso_fd_ctx *);
+mdso_api int  mdso_set_driver_fdctx     (struct mdso_driver_ctx *, const struct mdso_fd_ctx *);
+
 /* helper api */
 mdso_api FILE*mdso_create_archive       (const struct mdso_driver_ctx *, const char * arname);
 mdso_api FILE*mdso_create_asmsrc        (const struct mdso_driver_ctx *, const char * asmname);
 mdso_api FILE*mdso_create_object        (const struct mdso_driver_ctx *, const char * objname);
 
 /* utility api */
-mdso_api int  mdso_main                 (int, char **, char **);
+mdso_api int  mdso_main                 (int, char **, char **, const struct mdso_fd_ctx *);
 mdso_api int  mdso_create_implib_archive(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);

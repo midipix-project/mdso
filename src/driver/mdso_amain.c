@@ -6,9 +6,11 @@
 
 #include <stdio.h>
 #include <unistd.h>
+
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
 #include "mdso_driver_impl.h"
+#include "mdso_dprintf_impl.h"
 
 #ifndef MDSO_DRIVER_FLAGS
 #define MDSO_DRIVER_FLAGS	MDSO_DRIVER_VERBOSITY_ERRORS \
@@ -31,15 +33,16 @@ static const char * const mdso_ver_plain[6] = {
 		"",""
 };
 
-static ssize_t mdso_version(struct mdso_driver_ctx * dctx)
+static ssize_t mdso_version(int fdout, struct mdso_driver_ctx * dctx)
 {
 	const struct mdso_source_version * verinfo;
 	const char * const * verclr;
 
 	verinfo = mdso_source_version();
-	verclr  = isatty(STDOUT_FILENO) ? mdso_ver_color : mdso_ver_plain;
+	verclr  = isatty(fdout) ? mdso_ver_color : mdso_ver_plain;
 
-	return fprintf(stdout,vermsg,
+	return mdso_dprintf(
+			fdout,vermsg,
 			verclr[0],dctx->program,verclr[1],
 			verclr[2],verinfo->major,verinfo->minor,
 			verinfo->revision,verclr[3],
@@ -62,20 +65,25 @@ static int mdso_exit(struct mdso_driver_ctx * dctx, int ret)
 	return ret;
 }
 
-int mdso_main(int argc, char ** argv, char ** envp)
+int mdso_main(int argc, char ** argv, char ** envp, const struct mdso_fd_ctx * fdctx)
 {
 	int				ret;
+	int				fdout;
+	uint64_t			flags;
 	struct mdso_driver_ctx *	dctx;
 	struct mdso_unit_ctx *		uctx;
 	const char **			unit;
 
-	if ((ret = mdso_get_driver_ctx(argv,envp,MDSO_DRIVER_FLAGS,&dctx)))
+	flags = MDSO_DRIVER_FLAGS;
+	fdout = fdctx ? fdctx->fdout : STDOUT_FILENO;
+
+	if ((ret = mdso_get_driver_ctx(argv,envp,flags,fdctx,&dctx)))
 		return (ret == MDSO_USAGE)
 			? !--argc
 			: MDSO_ERROR;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_VERSION)
-		if ((mdso_version(dctx)) < 0)
+		if ((mdso_version(fdout,dctx)) < 0)
 			return mdso_exit(dctx,MDSO_ERROR);
 
 	if (dctx->cctx->implib)
