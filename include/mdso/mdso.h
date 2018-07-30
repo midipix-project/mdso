@@ -166,7 +166,7 @@ mdso_api int  mdso_main                 (int, char **, char **, const struct mds
 mdso_api int  mdso_create_implib_archive(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);
-mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);
+mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *);
 mdso_api int  mdso_output_error_record  (const struct mdso_driver_ctx *, const struct mdso_error_info *);
 mdso_api int  mdso_output_error_vector  (const struct mdso_driver_ctx *);
 

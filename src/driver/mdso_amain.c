@@ -54,8 +54,7 @@ static void mdso_perform_unit_actions(
 	struct mdso_unit_ctx *   uctx)
 {
 	if (uctx->cctx->fmtflags & MDSO_OUTPUT_EXPORT_SYMS)
-		mdso_output_export_symbols(
-			dctx,uctx,stdout);
+		mdso_output_export_symbols(dctx,uctx);
 }
 
 static int mdso_exit(struct mdso_driver_ctx * dctx, int ret)

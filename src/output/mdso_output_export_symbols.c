@@ -12,39 +12,46 @@
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_output.h>
+#include "mdso_driver_impl.h"
+#include "mdso_dprintf_impl.h"
 #include "mdso_errinfo_impl.h"
 
-static int pretty_header(const struct mdso_common_ctx * cctx, FILE * fout)
+static int pretty_header(int fdout, const struct mdso_common_ctx * cctx)
 {
 	return (cctx->fmtflags & MDSO_PRETTY_YAML)
-		? fputs("exports:\n",fout)
+		? mdso_dprintf(fdout,"exports:\n")
 		: 0;
 }
 
-static int pretty_export_item(const struct mdso_common_ctx * cctx, const char * name, FILE * fout)
+static int pretty_export_item(
+	int				fdout,
+	const struct mdso_common_ctx *	cctx,
+	const char *			name)
 {
 	if (cctx->fmtflags & MDSO_PRETTY_YAML)
-		return fprintf(fout,"- %s\n",name);
+		return mdso_dprintf(fdout,"- %s\n",name);
 	else
-		return fprintf(fout,"%s\n",name);
+		return mdso_dprintf(fdout,"%s\n",name);
 }
 
 int mdso_output_export_symbols(
 	const struct mdso_driver_ctx *	dctx,
-	const struct mdso_unit_ctx *	uctx,
-	FILE *				fout)
+	const struct mdso_unit_ctx *	uctx)
 {
-	const char * const * sym;
+	int			fdout;
+	const char * const *	sym;
+
+	fdout = mdso_driver_fdout(dctx);
 
 	if (!uctx->syms[0])
 		return 0;
 
-	if ((pretty_header(dctx->cctx,fout)) < 0)
-		return MDSO_FILE_ERROR(dctx);
+	if ((pretty_header(fdout,dctx->cctx)) < 0)
+		return MDSO_SYSTEM_ERROR(dctx);
 
 	for (sym=uctx->syms; *sym; sym++)
-		if ((pretty_export_item(dctx->cctx,*sym,fout)) < 0)
-			return MDSO_FILE_ERROR(dctx);
+		if ((pretty_export_item(fdout,dctx->cctx,*sym)) < 0)
+			return MDSO_SYSTEM_ERROR(dctx);
 
 	return 0;
 }
