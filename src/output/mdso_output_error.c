@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <mdso/mdso.h>
 
+#include "mdso_driver_impl.h"
+#include "mdso_dprintf_impl.h"
+
 static const char aclr_reset[]   = "\x1b[0m";
 static const char aclr_bold[]    = "\x1b[1m";
 
@@ -85,19 +88,24 @@ static int mdso_output_error_record_plain(
 {
 	const char * epath;
 	const char * errdesc = mdso_output_strerror(erri);
+	int          fderr   = mdso_driver_fderr(dctx);
 
 	epath = erri->euctx
 		? *erri->euctx->path
 		: erri->eunit;
 
 	if (epath && !(erri->eflags & MDSO_ERROR_NESTED))
-		if (fprintf(stderr,"%s: [%s] '%s':\n",
+		if (mdso_dprintf(
+				fderr,
+				"%s: [%s] '%s':\n",
 				dctx->program,
 				mdso_output_unit_header(erri),
 				epath) < 0)
 			return -1;
 
-	if (fprintf(stderr,"%s: %s %s(), line %d%s%s.\n",
+	if (mdso_dprintf(
+			fderr,
+			"%s: %s %s(), line %d%s%s.\n",
 			dctx->program,
 			mdso_output_error_header(erri),
 			erri->efunction,
@@ -106,7 +114,7 @@ static int mdso_output_error_record_plain(
 			errdesc) < 0)
 		return -1;
 
-	return fflush(stderr);
+	return 0;
 }
 
 static int mdso_output_error_record_annotated(
@@ -115,14 +123,15 @@ static int mdso_output_error_record_annotated(
 {
 	const char * epath;
 	const char * errdesc = mdso_output_strerror(erri);
+	int          fderr   = mdso_driver_fderr(dctx);
 
 	epath = erri->euctx
 		? *erri->euctx->path
 		: erri->eunit;
 
 	if (epath && !(erri->eflags & MDSO_ERROR_NESTED))
-		if (fprintf(
-				stderr,
+		if (mdso_dprintf(
+				fderr,
 				"%s%s%s:%s %s[%s]%s %s%s'%s'%s:\n",
 
 				aclr_bold,aclr_magenta,
@@ -138,8 +147,8 @@ static int mdso_output_error_record_annotated(
 				aclr_reset) < 0)
 			return -1;
 
-	if (fprintf(
-			stderr,
+	if (mdso_dprintf(
+			fderr,
 			"%s%s%s:%s %s%s%s %s%s%s()%s, %s%sline %d%s%s%s%s%s.\n",
 
 			aclr_bold,aclr_magenta,
@@ -164,7 +173,7 @@ static int mdso_output_error_record_annotated(
 			aclr_reset) < 0)
 		return -1;
 
-	return fflush(stderr);
+	return 0;
 }
 
 int mdso_output_error_record(
