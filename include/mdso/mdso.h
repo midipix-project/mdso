@@ -65,16 +65,16 @@ enum mdso_custom_error {
 	MDSO_ERR_CAP,
 };
 
+struct mdso_input {
+	void *		addr;
+	size_t		size;
+};
+
 struct mdso_source_version {
 	int		major;
 	int		minor;
 	int		revision;
 	const char *	commit;
-};
-
-struct mdso_input {
-	void *	addr;
-	size_t	size;
 };
 
 struct mdso_object {
@@ -129,15 +129,18 @@ struct mdso_unit_ctx {
 };
 
 /* driver api */
-mdso_api int  mdso_get_driver_ctx       (char ** argv, char ** envp, uint32_t flags, struct mdso_driver_ctx **);
-mdso_api int  mdso_create_driver_ctx    (const struct mdso_common_ctx *, struct mdso_driver_ctx **);
+mdso_api int  mdso_get_driver_ctx       (char ** argv, char ** envp, uint32_t flags,
+                                         struct mdso_driver_ctx **);
+
+mdso_api int  mdso_create_driver_ctx    (const struct mdso_common_ctx *,
+                                         struct mdso_driver_ctx **);
+
 mdso_api void mdso_free_driver_ctx      (struct mdso_driver_ctx *);
 
-mdso_api int  mdso_get_unit_ctx         (const struct mdso_driver_ctx *, const char * path, struct mdso_unit_ctx **);
-mdso_api void mdso_free_unit_ctx        (struct mdso_unit_ctx *);
+mdso_api int  mdso_get_unit_ctx         (const struct mdso_driver_ctx *, const char * path,
+                                         struct mdso_unit_ctx **);
 
-mdso_api int  mdso_map_input            (const struct mdso_driver_ctx *, int fd, const char * path, int prot, struct mdso_input *);
-mdso_api int  mdso_unmap_input          (struct mdso_input *);
+mdso_api void mdso_free_unit_ctx        (struct mdso_unit_ctx *);
 
 /* helper api */
 mdso_api FILE*mdso_create_archive       (const struct mdso_driver_ctx *, const char * arname);
@@ -152,6 +155,13 @@ mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);
 mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *, FILE *);
 mdso_api int  mdso_output_error_record  (const struct mdso_driver_ctx *, const struct mdso_error_info *);
 mdso_api int  mdso_output_error_vector  (const struct mdso_driver_ctx *);
+
+/* raw input api */
+mdso_api int  mdso_map_input            (const struct mdso_driver_ctx *,
+                                         int fd, const char * path, int prot,
+                                         struct mdso_input *);
+
+mdso_api int  mdso_unmap_input          (struct mdso_input *);
 
 /* low-level api */
 mdso_api uint32_t mdso_crc32_mbstr      (const unsigned char *, size_t *);
