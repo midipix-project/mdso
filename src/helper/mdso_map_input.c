@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include <mdso/mdso.h>
+#include "mdso_driver_impl.h"
 #include "mdso_errinfo_impl.h"
 
 int mdso_map_input(
@@ -22,12 +23,15 @@ int mdso_map_input(
 	int				prot,
 	struct mdso_input *		map)
 {
+	int		ret;
 	struct stat	st;
 	bool		fnew;
-	int		ret;
+	int		fdcwd;
+
+	fdcwd = mdso_driver_fdcwd(dctx);
 
 	if ((fnew = (fd < 0)))
-		fd  = open(path,O_RDONLY | O_CLOEXEC);
+		fd  = openat(fdcwd,path,O_RDONLY | O_CLOEXEC);
 
 	if (fd < 0)
 		return MDSO_SYSTEM_ERROR(dctx);
