@@ -112,27 +112,33 @@ static struct mdso_driver_ctx_impl * mdso_driver_ctx_alloc(
 	return &ictx->ctx;
 }
 
-static int mdso_dstdir_open(const struct mdso_common_ctx * cctx, const char * asmbase)
+static int mdso_dstdir_open(int fdcwd, const char * dstdir, const char * asmbase)
 {
 	int fdtop;
 	int fddst;
-	const int dirmode = S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
+	int dirmode = S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
 
-	if ((fdtop = openat(AT_FDCWD,cctx->dstdir,O_DIRECTORY)) < 0) {
-		if (mkdirat(AT_FDCWD,cctx->dstdir,dirmode) < 0)
-			return -1;
-		else if ((fdtop = openat(AT_FDCWD,cctx->dstdir,O_DIRECTORY)) < 0)
-			return -1;
-	}
+	if ((fdtop = openat(fdcwd,dstdir,O_DIRECTORY)) >= 0)
+		(void)0;
 
-	if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) < 0) {
-		if (mkdirat(fdtop,asmbase,dirmode) < 0)
+	else if (mkdirat(fdcwd,dstdir,dirmode) < 0)
 			return -1;
-		else if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) < 0)
-			return -1;
-	}
+
+	else if ((fdtop = openat(fdcwd,dstdir,O_DIRECTORY)) < 0)
+		return -1;
+
+
+	if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) >= 0)
+		(void)0;
+
+	else if (mkdirat(fdtop,asmbase,dirmode))
+		fddst = AT_FDCWD;
+
+	else if ((fddst = openat(fdtop,asmbase,O_DIRECTORY)) < 0)
+		fddst = AT_FDCWD;
 
 	close(fdtop);
+
 	return fddst;
 }
 
@@ -142,7 +148,7 @@ static int mdso_get_driver_ctx_fail(
 	char *			asmbase,
 	int			fddst)
 {
-	if (fddst >= 0)
+	if (fddst != AT_FDCWD)
 		close(fddst);
 
 	if (implib)
@@ -152,6 +158,7 @@ static int mdso_get_driver_ctx_fail(
 		free(asmbase);
 
 	argv_free(meta);
+
 	return -1;
 }
 
@@ -205,7 +212,6 @@ int mdso_get_driver_ctx(
 	pretty	= 0;
 	implib  = 0;
 	asmbase = 0;
-	fddst	= -1;
 	program = argv_program_name(argv[0]);
 
 	cctx.drvflags = flags;
@@ -314,16 +320,21 @@ int mdso_get_driver_ctx(
 		cctx.libname = "win32any";
 
 	if (cctx.implib && !(implib = strdup(cctx.implib)))
-		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
+		return mdso_get_driver_ctx_fail(meta,0,0,AT_FDCWD);
 
 	if (!(asmbase = strdup(cctx.libname)))
-		return mdso_get_driver_ctx_fail(meta,implib,0,fddst);
+		return mdso_get_driver_ctx_fail(meta,implib,0,AT_FDCWD);
 
 	if ((dot = strchr(asmbase,'.')))
 		*dot = '\0';
 
-	if (cctx.dstdir && (fddst = mdso_dstdir_open(&cctx,asmbase)) < 0)
-		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
+
+	if (!cctx.dstdir)
+		fddst = AT_FDCWD;
+
+	else if ((fddst = mdso_dstdir_open(fdctx->fdcwd,cctx.dstdir,asmbase)) < 0)
+		return mdso_get_driver_ctx_fail(meta,implib,asmbase,AT_FDCWD);
+
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,fdctx,&cctx,nunits)))
 		return mdso_get_driver_ctx_fail(meta,implib,asmbase,fddst);
@@ -331,12 +342,14 @@ int mdso_get_driver_ctx(
 	ctx->implib		= implib;
 	ctx->asmbase		= asmbase;
 	ctx->cctx.asmbase	= asmbase;
-
 	ctx->fddst		= fddst;
+
 	ctx->ctx.program	= program;
 	ctx->ctx.cctx		= &ctx->cctx;
+	ctx->fdctx.fddst	= fddst;
 
 	*pctx = &ctx->ctx;
+
 	return MDSO_OK;
 }
 
@@ -345,10 +358,10 @@ int mdso_create_driver_ctx(
 	const struct mdso_fd_ctx *	fdctx,
 	struct mdso_driver_ctx **	pctx)
 {
-	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
+	int				fddst;
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl *	ctx;
-	int				fddst  = -1;
+	const struct argv_option *	optv[MDSO_OPTV_ELEMENTS];
 	char *				argv[] = {"mdso_driver",0};
 
 	if (!fdctx) {
@@ -367,8 +380,14 @@ int mdso_create_driver_ctx(
 	if (!(meta = argv_get(argv,optv,0,fdctx->fderr)))
 		return -1;
 
-	if (cctx->dstdir && (fddst = mdso_dstdir_open(cctx,cctx->asmbase)) < 0)
-		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
+	if (!cctx->dstdir)
+		fddst = AT_FDCWD;
+
+	else if ((fddst = mdso_dstdir_open(
+			fdctx->fdcwd,
+			cctx->dstdir,
+			cctx->asmbase)) < 0)
+		return mdso_get_driver_ctx_fail(meta,0,0,AT_FDCWD);
 
 	if (!(ctx = mdso_driver_ctx_alloc(meta,fdctx,cctx,0)))
 		return mdso_get_driver_ctx_fail(meta,0,0,fddst);
@@ -376,14 +395,18 @@ int mdso_create_driver_ctx(
 	if (!ctx->cctx.dsoflags)
 		ctx->cctx.dsoflags = MDSO_FLAG_LOADER_PATH;
 
-	ctx->ctx.cctx = &ctx->cctx;
+	ctx->fddst       = fddst;
+	ctx->ctx.cctx    = &ctx->cctx;
+	ctx->fdctx.fddst = fddst;
+
 	*pctx = &ctx->ctx;
+
 	return MDSO_OK;
 }
 
 static void mdso_free_driver_ctx_impl(struct mdso_driver_ctx_alloc * ictx)
 {
-	if (ictx->ctx.fddst >= 0)
+	if (ictx->ctx.fddst != AT_FDCWD)
 		close(ictx->ctx.fddst);
 
 	if (ictx->ctx.fdtmpin >= 0)
@@ -449,7 +472,18 @@ int mdso_set_driver_fdctx(
 	ictx->fdctx.fderr = fdctx->fderr;
 	ictx->fdctx.fdlog = fdctx->fdlog;
 	ictx->fdctx.fdcwd = fdctx->fdcwd;
-	ictx->fdctx.fddst = fdctx->fddst;
+
+	if (ictx->fdctx.fddst == fdctx->fddst) {
+		(void)0;
+
+	} else if (ictx->fddst == AT_FDCWD) {
+		ictx->fdctx.fddst = fdctx->fddst;
+
+	} else {
+		close(ictx->fddst);
+		ictx->fddst       = AT_FDCWD;
+		ictx->fdctx.fddst = fdctx->fddst;
+	}
 
 	return 0;
 }
