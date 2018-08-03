@@ -75,7 +75,7 @@ int  mdso_argen_common(
 	char					objname[16];
 
 	/* init */
-	memset (sobj,0,sizeof(sobj));
+	memset(sobj,0,sizeof(sobj));
 
 	for (nsym=0,ndata=0,psym=symv; *psym; psym++,nsym++)
 		ndata += (stype[psym-symv] == MDSO_SYMBOL_TYPE_DATA);
@@ -106,6 +106,7 @@ int  mdso_argen_common(
 	mapstrslen = aobj->mapstrslen;
 	mapstrsnum = aobj->mapstrsnum;
 
+	/* objlen: symfn, symentry */
 	for (psym=symv,pobj=&aobj[1]; *psym && !ret; psym++) {
 		if (stype[psym-symv] == MDSO_SYMBOL_TYPE_CODE) {
 			ret  = mdso_objgen_symfn(dctx,*psym,pobj);
@@ -136,11 +137,14 @@ int  mdso_argen_common(
 		pobj++;
 	}
 
-	if (ret && (aobj != sobj))
-		free(aobj);
+	/* verify logic */
+	if (ret && (aobj == sobj))
+		return MDSO_NESTED_ERROR(dctx);
 
-	if (ret)
-		return ret;
+	if (ret) {
+		free(aobj);
+		return MDSO_NESTED_ERROR(dctx);
+	}
 
 	/* index: string block alignment */
 	mapstrslen += 1;
@@ -155,6 +159,7 @@ int  mdso_argen_common(
 	objlen |= 15;
 	objlen ^= 15;
 
+	/* archive meta info, in-memory mapping */
 	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
@@ -271,13 +276,6 @@ int  mdso_argen_common(
 		pobj++;
 	}
 
-	if (ret) {
-		if (aobj != sobj)
-			free(aobj);
-
-		return ret;
-	}
-
 	/* aobj */
 	if (aobj != sobj)
 		free(aobj);
@@ -285,6 +283,10 @@ int  mdso_argen_common(
 	/* fs object unmap */
 	if (!addr)
 		munmap(vobj->addr,vobj->size);
+
+	/* verify */
+	if (ret)
+		return MDSO_NESTED_ERROR(dctx);
 
 	/* tada */
 	return 0;
