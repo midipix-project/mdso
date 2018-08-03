@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <mdso/mdso.h>
 #include "mdso_errinfo_impl.h"
@@ -50,7 +51,6 @@ int  mdso_argen_common(
 	const struct mdso_driver_ctx *	dctx,
 	const char **			symv,
 	const int *			stype,
-	FILE *				fout,
 	struct mdso_object *		vobj)
 {
 	int					ret;
@@ -63,6 +63,7 @@ int  mdso_argen_common(
 	uint32_t				mapstrsnum;
 	uint32_t				mapstrslen;
 	uint32_t				symidx;
+	void *					addr;
 	unsigned char *				ar;
 	unsigned char *				mark;
 	unsigned char *				idx;
@@ -154,25 +155,25 @@ int  mdso_argen_common(
 	objlen |= 15;
 	objlen ^= 15;
 
-	if (vobj && vobj->addr && (vobj->size < objlen))
+	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
-	if (vobj && !vobj->addr) {
-		vobj->size = objlen;
+	if ((addr = vobj->addr)) {
+		(void)0;
+
+	} else {
+		vobj->size       = objlen;
 		vobj->mapstrslen = mapstrslen;
 		vobj->mapstrsnum = mapstrsnum;
-		return 0;
+
+		if (!vobj->name)
+			return 0;
+
+		else if (mdso_create_archive(dctx,vobj) < 0)
+			return MDSO_NESTED_ERROR(dctx);
 	}
 
-	if (vobj)
-		ar = (unsigned char *)vobj->addr;
-
-	else if (!(ar = calloc(1,objlen))) {
-		if (aobj != sobj)
-			free(aobj);
-
-		return MDSO_SYSTEM_ERROR(dctx);
-	}
+	ar = (unsigned char *)vobj->addr;
 
 	/* archive signature */
 	memcpy(ar,"!<arch>\n",8);
@@ -274,23 +275,18 @@ int  mdso_argen_common(
 		if (aobj != sobj)
 			free(aobj);
 
-		if (!vobj)
-			free(ar);
-
 		return ret;
 	}
 
-	/* tada */
-	if (fout)
-		ret = fwrite(ar,objlen,1,fout);
-
+	/* aobj */
 	if (aobj != sobj)
 		free(aobj);
 
-	if (!vobj)
-		free(ar);
+	/* fs object unmap */
+	if (!addr)
+		munmap(vobj->addr,vobj->size);
 
-	return (ret == 0)
-		? MDSO_FILE_ERROR(dctx)
-		: 0;
+	/* tada */
+	return 0;
+
 }

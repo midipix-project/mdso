@@ -60,25 +60,6 @@ static int mdso_map_output(
 	return 0;
 }
 
-static FILE * mdso_create_output_stream(
-	const struct mdso_driver_ctx *	dctx,
-	const char *			name)
-{
-	int	fdout;
-	FILE *	fout;
-
-	if ((fdout = mdso_create_output(dctx,name)) < 0)
-		return 0;
-
-	if (!(fout = fdopen(fdout,"w"))) {
-		close(fdout);
-		MDSO_SYSTEM_ERROR(dctx);
-		return 0;
-	}
-
-	return fout;
-}
-
 static int mdso_create_mapped_output(
 	const struct mdso_driver_ctx *	dctx,
 	struct mdso_object *		obj)
@@ -92,13 +73,6 @@ static int mdso_create_mapped_output(
 		return MDSO_NESTED_ERROR(dctx);
 
 	return 0;
-}
-
-FILE * mdso_create_archive(
-	const struct mdso_driver_ctx *	dctx,
-	const char *			arname)
-{
-	return mdso_create_output_stream(dctx,arname);
 }
 
 int mdso_create_asmsrc(
@@ -116,6 +90,13 @@ int mdso_create_asmsrc(
 }
 
 int mdso_create_object(
+	const struct mdso_driver_ctx *	dctx,
+	struct mdso_object *		obj)
+{
+	return mdso_create_mapped_output(dctx,obj);
+}
+
+int mdso_create_archive(
 	const struct mdso_driver_ctx *	dctx,
 	struct mdso_object *		obj)
 {

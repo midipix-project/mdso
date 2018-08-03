@@ -15,8 +15,7 @@
 static void mdso_free_uctx_vector(
 	struct mdso_unit_ctx **	uctxv,
 	const char **		symv,
-	int *			stype,
-	FILE *			fout)
+	int *			stype)
 {
 	struct mdso_unit_ctx **	puctx;
 
@@ -30,16 +29,14 @@ static void mdso_free_uctx_vector(
 		mdso_free_unit_ctx(*puctx);
 
 	free(uctxv);
-	fclose(fout);
 }
 
 int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 {
-	int			ret;
-	FILE *			fout;
 	size_t			nsym;
 	struct mdso_unit_ctx **	uctxv;
 	struct mdso_unit_ctx **	puctx;
+	struct mdso_object	obj;
 	const char * const *	dsym;
 	const char **		unit;
 	const char **		psym;
@@ -55,12 +52,9 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 	if (!(uctxv = calloc(++unit - dctx->units,sizeof(*uctxv))))
 		return MDSO_SYSTEM_ERROR(dctx);
 
-	if (!(fout = mdso_create_archive(dctx,dctx->cctx->implib)))
-		return MDSO_NESTED_ERROR(dctx);
-
 	for (puctx=uctxv,unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,puctx++)) {
-			mdso_free_uctx_vector(uctxv,0,0,fout);
+			mdso_free_uctx_vector(uctxv,0,0);
 			return MDSO_NESTED_ERROR(dctx);
 		}
 	}
@@ -70,12 +64,12 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 			nsym++;
 
 	if (!(symv = calloc(nsym+1,sizeof(const char *)))) {
-		mdso_free_uctx_vector(uctxv,0,0,fout);
+		mdso_free_uctx_vector(uctxv,0,0);
 		return MDSO_SYSTEM_ERROR(dctx);
 	}
 
 	if (!(stype = calloc(nsym+1,sizeof(int)))) {
-		mdso_free_uctx_vector(uctxv,symv,0,fout);
+		mdso_free_uctx_vector(uctxv,symv,0);
 		return MDSO_SYSTEM_ERROR(dctx);
 	}
 
@@ -86,8 +80,13 @@ int  mdso_create_implib_archive(const struct mdso_driver_ctx * dctx)
 		}
 	}
 
-	ret = mdso_argen_common(dctx,symv,stype,fout,0);
-	mdso_free_uctx_vector(uctxv,symv,stype,fout);
+	memset(&obj,0,sizeof(obj));
+	obj.name = dctx->cctx->implib;
 
-	return ret ? MDSO_NESTED_ERROR(dctx) : 0;
+	if (mdso_argen_common(dctx,symv,stype,&obj) < 0) {
+		mdso_free_uctx_vector(uctxv,symv,stype);
+		return MDSO_NESTED_ERROR(dctx);
+	}
+
+	return 0;
 }
