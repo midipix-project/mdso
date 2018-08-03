@@ -105,9 +105,14 @@ int mdso_create_asmsrc(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			asmname)
 {
-	return dctx->cctx->dstdir
-		? mdso_create_output(dctx,asmname)
-		: mdso_driver_fdout(dctx);
+	if (dctx->cctx->dstdir)
+		return mdso_create_output(dctx,asmname);
+
+	else if (dctx->cctx->drvflags & MDSO_DRIVER_GENERATE_OBJECTS)
+		return mdso_create_output(dctx,asmname);
+
+	else
+		return mdso_driver_fdout(dctx);
 }
 
 int mdso_create_object(
