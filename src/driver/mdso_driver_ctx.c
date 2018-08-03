@@ -118,7 +118,10 @@ static int mdso_dstdir_open(int fdcwd, const char * dstdir, const char * asmbase
 	int fddst;
 	int dirmode = S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
 
-	if ((fdtop = openat(fdcwd,dstdir,O_DIRECTORY)) >= 0)
+	if (!dstdir)
+		fdtop = fdcwd;
+
+	else if ((fdtop = openat(fdcwd,dstdir,O_DIRECTORY)) >= 0)
 		(void)0;
 
 	else if (mkdirat(fdcwd,dstdir,dirmode) < 0)
@@ -329,7 +332,7 @@ int mdso_get_driver_ctx(
 		*dot = '\0';
 
 
-	if (!cctx.dstdir)
+	if (!cctx.dstdir && !(cctx.drvflags & MDSO_DRIVER_GENERATE_OBJECTS))
 		fddst = AT_FDCWD;
 
 	else if ((fddst = mdso_dstdir_open(fdctx->fdcwd,cctx.dstdir,asmbase)) < 0)
@@ -380,7 +383,7 @@ int mdso_create_driver_ctx(
 	if (!(meta = argv_get(argv,optv,0,fdctx->fderr)))
 		return -1;
 
-	if (!cctx->dstdir)
+	if (!cctx->dstdir && !(cctx->drvflags & MDSO_DRIVER_GENERATE_OBJECTS))
 		fddst = AT_FDCWD;
 
 	else if ((fddst = mdso_dstdir_open(
