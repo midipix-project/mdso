@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include <mdso/mdso.h>
+#include "mdso_dprintf_impl.h"
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
@@ -23,19 +24,19 @@ static const char * const asm_lines[] = {
 int mdso_asmgen_symfn(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
-	FILE *				fout)
+	int				fdout)
 {
 	const char * const * line;
 	const char *         uscore;
 
-	if (fprintf(fout,"\t.file     \".%s_symfn.s\"\n",sym) < 0)
+	if (mdso_dprintf(fdout,"\t.file     \".%s_symfn.s\"\n",sym) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	uscore = (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR)
 		? "" : "_";
 
 	for (line=asm_lines; *line; line++)
-		if (fprintf(fout,*line,uscore,sym) < 0)
+		if (mdso_dprintf(fdout,*line,uscore,sym) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
 	return 0;

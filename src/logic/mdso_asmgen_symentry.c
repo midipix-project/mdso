@@ -9,6 +9,7 @@
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_specs.h>
+#include "mdso_dprintf_impl.h"
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
@@ -22,14 +23,14 @@ static const char * const asm_lines[] = {
 int mdso_asmgen_symentry(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
-	FILE *				fout)
+	int				fdout)
 {
 	const char * const *	line;
 	const char *		alignstr;
 	const char *		ptrsize;
 	const char *		uscore;
 
-	if (fprintf(fout,"\t.file     \".%s_symentry.s\"\n",sym) < 0)
+	if (mdso_dprintf(fdout,"\t.file     \".%s_symentry.s\"\n",sym) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
@@ -43,22 +44,22 @@ int mdso_asmgen_symentry(
 	}
 
 	for (line=asm_lines; *line; line++)
-		if ((fprintf(fout,*line,sym)) < 0)
+		if ((mdso_dprintf(fdout,*line,sym)) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
-	if (fprintf(fout,"\t.globl    __imp_%s%s\n",uscore,sym) < 0)
+	if (mdso_dprintf(fdout,"\t.globl    __imp_%s%s\n",uscore,sym) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fputs(alignstr,fout)) < 0)
+	if (mdso_dprintf(fdout,alignstr) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"__imp_%s%s:\n",uscore,sym)) < 0)
+	if ((mdso_dprintf(fdout,"__imp_%s%s:\n",uscore,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t.symstr\n",ptrsize)) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t.symstr\n",ptrsize)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t.dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t.dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	return 0;

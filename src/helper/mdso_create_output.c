@@ -58,13 +58,13 @@ FILE * mdso_create_archive(
 	return mdso_create_output_stream(dctx,arname);
 }
 
-FILE * mdso_create_asmsrc(
+int mdso_create_asmsrc(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			asmname)
 {
 	return dctx->cctx->dstdir
-		? mdso_create_output_stream(dctx,asmname)
-		: stdout;
+		? mdso_create_output(dctx,asmname)
+		: mdso_driver_fdout(dctx);
 }
 
 FILE * mdso_create_object(

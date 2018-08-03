@@ -9,6 +9,7 @@
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_specs.h>
+#include "mdso_dprintf_impl.h"
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_hdr_lines[] = {
@@ -40,7 +41,7 @@ static const char * const asm_libname_fmt =
 
 int mdso_asmgen_dsometa(
 	const struct mdso_driver_ctx *	dctx,
-	FILE *				fout)
+	int				fdout)
 {
 	const char * const *	line;
 	const char *		alignstr;
@@ -55,29 +56,29 @@ int mdso_asmgen_dsometa(
 	}
 
 	for (line=asm_hdr_lines; *line; line++)
-		if ((fprintf(fout,*line,dctx->cctx->libname)) < 0)
+		if ((mdso_dprintf(fdout,*line,dctx->cctx->libname)) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
-	if ((fputs(alignstr,fout)) < 0)
+	if (mdso_dprintf(fdout,alignstr) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,".dsometa_%s:\n",dctx->cctx->libname)) < 0)
+	if ((mdso_dprintf(fdout,".dsometa_%s:\n",dctx->cctx->libname)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%d\t\t# base\n",ptrsize,0)) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t%d\t\t# base\n",ptrsize,0)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%s\t# name\n",ptrsize,".libname")) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t%s\t# name\n",ptrsize,".libname")) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((fprintf(fout,"\t%s\t%u\t\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t%u\t\t# flags\n",".long",dctx->cctx->dsoflags)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	for (line=asm_meta_lines; *line; line++)
-		if ((fprintf(fout,*line,ptrsize)) < 0)
+		if ((mdso_dprintf(fdout,*line,ptrsize)) < 0)
 			return MDSO_FILE_ERROR(dctx);
 
-	if (fprintf(fout,asm_libname_fmt,dctx->cctx->libname) < 0)
+	if (mdso_dprintf(fdout,asm_libname_fmt,dctx->cctx->libname) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	return 0;

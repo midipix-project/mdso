@@ -158,7 +158,7 @@ mdso_api int  mdso_set_driver_fdctx     (struct mdso_driver_ctx *, const struct 
 
 /* helper api */
 mdso_api FILE*mdso_create_archive       (const struct mdso_driver_ctx *, const char * arname);
-mdso_api FILE*mdso_create_asmsrc        (const struct mdso_driver_ctx *, const char * asmname);
+mdso_api int  mdso_create_asmsrc        (const struct mdso_driver_ctx *, const char * asmname);
 mdso_api FILE*mdso_create_object        (const struct mdso_driver_ctx *, const char * objname);
 
 /* utility api */
@@ -181,9 +181,9 @@ mdso_api int  mdso_unmap_input          (struct mdso_input *);
 mdso_api uint32_t mdso_crc32_mbstr      (const unsigned char *, size_t *);
 mdso_api uint64_t mdso_crc64_mbstr      (const unsigned char *, size_t *);
 
-mdso_api int      mdso_asmgen_dsometa   (const struct mdso_driver_ctx *, FILE *);
-mdso_api int      mdso_asmgen_symentry  (const struct mdso_driver_ctx *, const char *, FILE *);
-mdso_api int      mdso_asmgen_symfn     (const struct mdso_driver_ctx *, const char *, FILE *);
+mdso_api int      mdso_asmgen_dsometa   (const struct mdso_driver_ctx *, int);
+mdso_api int      mdso_asmgen_symentry  (const struct mdso_driver_ctx *, const char *, int);
+mdso_api int      mdso_asmgen_symfn     (const struct mdso_driver_ctx *, const char *, int);
 
 mdso_api int      mdso_objgen_dsometa   (const struct mdso_driver_ctx *, FILE *, struct mdso_object *);
 mdso_api int      mdso_objgen_symentry  (const struct mdso_driver_ctx *, const char *, FILE *, struct mdso_object *);

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <mdso/mdso.h>
+#include "mdso_driver_impl.h"
 #include "mdso_errinfo_impl.h"
 
 static void mdso_init_asmname(char * buf, const char * fmt, const char * str)
@@ -24,11 +25,11 @@ static void mdso_init_asmname(char * buf, const char * fmt, const char * str)
 		sprintf(buf,fmt,str);
 }
 
-mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
+int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 {
 	struct mdso_unit_ctx *	uctx;
 	const char **		unit;
-	FILE *			fout;
+	int			fdout;
 	char			asmname[PATH_MAX];
 	const char * const *	sym;
 	int			ret;
@@ -42,13 +43,13 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 		for (sym=uctx->syms; *sym; sym++) {
 			mdso_init_asmname(asmname,".%s_symentry.s",*sym);
 
-			if (!(fout = mdso_create_asmsrc(dctx,asmname)))
+			if ((fdout = mdso_create_asmsrc(dctx,asmname)) < 0)
 				return MDSO_NESTED_ERROR(dctx);
 
-			ret = mdso_asmgen_symentry(dctx,*sym,fout);
+			ret = mdso_asmgen_symentry(dctx,*sym,fdout);
 
-			if (fout != stdout)
-				fclose(fout);
+			if (fdout != mdso_driver_fdout(dctx))
+				close(fdout);
 
 			if (ret < 0)
 				return MDSO_NESTED_ERROR(dctx);
@@ -56,13 +57,13 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
 				mdso_init_asmname(asmname,".%s_symfn.s",*sym);
 
-				if (!(fout = mdso_create_asmsrc(dctx,asmname)))
+				if ((fdout = mdso_create_asmsrc(dctx,asmname)) < 0)
 					return MDSO_NESTED_ERROR(dctx);
 
-				ret = mdso_asmgen_symfn(dctx,*sym,fout);
+				ret = mdso_asmgen_symfn(dctx,*sym,fdout);
 
-				if (fout != stdout)
-					fclose(fout);
+				if (fdout != mdso_driver_fdout(dctx))
+					close(fdout);
 
 				if (ret < 0)
 					return MDSO_NESTED_ERROR(dctx);
@@ -75,13 +76,13 @@ mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 	/* dsometa */
 	mdso_init_asmname(asmname,".dsometa_%s.s",dctx->cctx->libname);
 
-	if (!(fout = mdso_create_asmsrc(dctx,asmname)))
+	if ((fdout = mdso_create_asmsrc(dctx,asmname)) < 0)
 		return MDSO_NESTED_ERROR(dctx);
 
-	ret = mdso_asmgen_dsometa(dctx,fout);
+	ret = mdso_asmgen_dsometa(dctx,fdout);
 
-	if (fout != stdout)
-		fclose(fout);
+	if (fdout != mdso_driver_fdout(dctx))
+		close(fdout);
 
 	return (ret < 0) ? MDSO_NESTED_ERROR(dctx) : 0;
 }
