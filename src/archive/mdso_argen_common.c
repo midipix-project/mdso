@@ -93,7 +93,7 @@ int  mdso_argen_common(
 	objlen += sizeof(struct pe_raw_archive_common_hdr);
 
 	/* objlen: member headers */
-	ret = mdso_objgen_dsometa(dctx,0,aobj);
+	ret = mdso_objgen_dsometa(dctx,aobj);
 
 	aobj->size += 1;
 	aobj->size |= 1;
@@ -107,7 +107,7 @@ int  mdso_argen_common(
 
 	for (psym=symv,pobj=&aobj[1]; *psym && !ret; psym++) {
 		if (stype[psym-symv] == MDSO_SYMBOL_TYPE_CODE) {
-			ret  = mdso_objgen_symfn(dctx,*psym,0,pobj);
+			ret  = mdso_objgen_symfn(dctx,*psym,pobj);
 
 			pobj->size += 1;
 			pobj->size |= 1;
@@ -121,7 +121,7 @@ int  mdso_argen_common(
 			pobj++;
 		}
 
-		ret |= mdso_objgen_symentry(dctx,*psym,0,pobj);
+		ret |= mdso_objgen_symentry(dctx,*psym,pobj);
 
 		pobj->size += 1;
 		pobj->size |= 1;
@@ -205,7 +205,7 @@ int  mdso_argen_common(
 		idx += sizeof(uint32_t);
 	}
 
-	ret = mdso_objgen_dsometa(dctx,0,aobj);
+	ret = mdso_objgen_dsometa(dctx,aobj);
 
 	mdso_argen_common_hdr(
 		(struct pe_raw_archive_common_hdr *)mark,
@@ -228,7 +228,7 @@ int  mdso_argen_common(
 				idx += sizeof(uint32_t);
 			}
 
-			ret = mdso_objgen_symfn(dctx,*psym,0,pobj);
+			ret = mdso_objgen_symfn(dctx,*psym,pobj);
 
 			sprintf(
 				objname,"f%06zu.o",
@@ -259,7 +259,7 @@ int  mdso_argen_common(
 			objname,"s%06zu.o",
 			psym - symv);
 
-		ret = mdso_objgen_symentry(dctx,*psym,0,pobj);
+		ret = mdso_objgen_symentry(dctx,*psym,pobj);
 
 		mdso_argen_common_hdr(
 			(struct pe_raw_archive_common_hdr *)mark,

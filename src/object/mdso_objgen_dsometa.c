@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <mdso/mdso.h>
 #include <mdso/mdso_specs.h>
@@ -32,11 +33,11 @@ struct mdso_dsometa_object {
 
 int mdso_objgen_dsometa(
 	const struct mdso_driver_ctx *	dctx,
-	FILE *				fout,
 	struct mdso_object *		vobj)
 {
 	struct mdso_dsometa_object *	dsometa;
 	struct pe_raw_coff_symbol *	symrec;
+	void *				addr;
 	unsigned char *			mark;
 	struct pe_raw_aux_rec_section *	aux;
 	size_t				buflen;
@@ -65,21 +66,25 @@ int mdso_objgen_dsometa(
 	cstlen = (3 * liblen) + 48;
 	objlen = sizeof(*dsometa) + cstlen;
 
-	if (vobj && vobj->addr && (vobj->size < objlen))
+	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
-	if (vobj && !vobj->addr) {
-		vobj->size = objlen;
+	if ((addr = vobj->addr)) {
+		(void)0;
+
+	} else {
+		vobj->size       = objlen;
 		vobj->mapstrsnum = 1;
 		vobj->mapstrslen = 10 + liblen;
-		return 0;
+
+		if (!vobj->name)
+			return 0;
+
+		else if (mdso_create_object(dctx,vobj) < 0)
+			return MDSO_NESTED_ERROR(dctx);
 	}
 
-	if (vobj)
-		dsometa = (struct mdso_dsometa_object *)vobj->addr;
-
-	else if (!(dsometa = calloc(1,objlen)))
-		return MDSO_SYSTEM_ERROR(dctx);
+	dsometa = (struct mdso_dsometa_object *)vobj->addr;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		reclen  = sizeof(struct mdso_meta_record_m64);
@@ -220,20 +225,17 @@ int mdso_objgen_dsometa(
 	memcpy(&mark[9],dctx->cctx->libname,liblen);
 
 	/* archive symbol map */
-	if (vobj && vobj->mapstrs)
+	if (vobj->mapstrs)
 		memcpy(vobj->mapstrs,mark,9+liblen);
 
 	/* .libname */
 	mark = dsometa->hdr.cfh_machine;
 	memcpy(&mark[stroff],dctx->cctx->libname,liblen);
 
+	/* fs object unmap */
+	if (!addr)
+		munmap(vobj->addr,vobj->size);
+
 	/* tada */
-	if (fout)
-		if (fwrite(dsometa,objlen,1,fout) == 0)
-			return MDSO_FILE_ERROR(dctx);
-
-	if (!vobj)
-		free(dsometa);
-
 	return 0;
 }

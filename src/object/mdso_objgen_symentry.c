@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <mdso/mdso.h>
 #include "mdso_object_impl.h"
@@ -32,11 +33,11 @@ struct mdso_symentry_object {
 int mdso_objgen_symentry(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
-	FILE *				fout,
 	struct mdso_object *		vobj)
 {
 	struct mdso_symentry_object *	syment;
 	struct pe_raw_coff_symbol *	symrec;
+	void *				addr;
 	unsigned char *			mark;
 	unsigned char *			mapsym;
 	struct pe_raw_aux_rec_section *	aux;
@@ -71,21 +72,25 @@ int mdso_objgen_symentry(
 	objlen = sizeof(*syment) + cstlen;
 	uscore = !(dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR);
 
-	if (vobj && vobj->addr && (vobj->size < objlen))
+	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
-	if (vobj && !vobj->addr) {
-		vobj->size = objlen;
+	if ((addr = vobj->addr)) {
+		(void)0;
+
+	} else {
+		vobj->size       = objlen;
 		vobj->mapstrsnum = 1;
 		vobj->mapstrslen = 7 + uscore + symlen;
-		return 0;
+
+		if (!vobj->name)
+			return 0;
+
+		else if (mdso_create_object(dctx,vobj) < 0)
+			return MDSO_NESTED_ERROR(dctx);
 	}
 
-	if (vobj)
-		syment = (struct mdso_symentry_object *)vobj->addr;
-
-	else if (!(syment = calloc(1,objlen)))
-		return MDSO_SYSTEM_ERROR(dctx);
+	syment = (struct mdso_symentry_object *)vobj->addr;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		aattr   = PE_IMAGE_SCN_ALIGN_16BYTES;
@@ -238,7 +243,7 @@ int mdso_objgen_symentry(
 	symrec += 1;
 
 	/* archive symbol map */
-	if (vobj && vobj->mapstrs)
+	if (vobj->mapstrs)
 		memcpy(vobj->mapstrs,mapsym,mark-mapsym);
 
 	/* coff symbol: .dsometa_libname */
@@ -255,13 +260,10 @@ int mdso_objgen_symentry(
 	mark = syment->hdr.cfh_machine;
 	memcpy(&mark[stroff],sym,symlen);
 
+	/* fs object unmap */
+	if (!addr)
+		munmap(vobj->addr,vobj->size);
+
 	/* tada */
-	if (fout)
-		if (fwrite(syment,objlen,1,fout) == 0)
-			return MDSO_FILE_ERROR(dctx);
-
-	if (!vobj)
-		free(syment);
-
 	return 0;
 }

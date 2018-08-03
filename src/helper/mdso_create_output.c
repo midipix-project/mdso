@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
 #include <mdso/mdso.h>
 #include "mdso_driver_impl.h"
@@ -25,11 +26,38 @@ static int mdso_create_output(
 	fddst = mdso_driver_fddst(dctx);
 
 	if ((fdout = openat(fddst,name,
-                        O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
-                        S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0)
+			O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
+			S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0)
 		return MDSO_SYSTEM_ERROR(dctx);
 
 	return fdout;
+}
+
+static int mdso_map_output(
+	const struct mdso_driver_ctx *	dctx,
+	struct mdso_object *		obj,
+	int				fd)
+{
+	void * addr;
+
+	if (ftruncate(fd,obj->size)) {
+		close(fd);
+		return MDSO_SYSTEM_ERROR(dctx);
+	}
+
+	addr = mmap(
+		0,obj->size,
+		PROT_WRITE,MAP_SHARED,
+		fd,0);
+
+	close(fd);
+
+	if (addr == MAP_FAILED)
+		return MDSO_SYSTEM_ERROR(dctx);
+
+	obj->addr = addr;
+
+	return 0;
 }
 
 static FILE * mdso_create_output_stream(
@@ -51,6 +79,21 @@ static FILE * mdso_create_output_stream(
 	return fout;
 }
 
+static int mdso_create_mapped_output(
+	const struct mdso_driver_ctx *	dctx,
+	struct mdso_object *		obj)
+{
+	int fd;
+
+	if ((fd = mdso_create_output(dctx,obj->name)) < 0)
+		return MDSO_NESTED_ERROR(dctx);
+
+	if (mdso_map_output(dctx,obj,fd) < 0)
+		return MDSO_NESTED_ERROR(dctx);
+
+	return 0;
+}
+
 FILE * mdso_create_archive(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			arname)
@@ -67,9 +110,9 @@ int mdso_create_asmsrc(
 		: mdso_driver_fdout(dctx);
 }
 
-FILE * mdso_create_object(
+int mdso_create_object(
 	const struct mdso_driver_ctx *	dctx,
-	const char *			objname)
+	struct mdso_object *		obj)
 {
-	return mdso_create_output_stream(dctx,objname);
+	return mdso_create_mapped_output(dctx,obj);
 }

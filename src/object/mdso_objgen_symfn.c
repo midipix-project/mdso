@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <mdso/mdso.h>
 #include "mdso_object_impl.h"
@@ -46,12 +47,12 @@ struct mdso_symfn_object {
 int mdso_objgen_symfn(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
-	FILE *				fout,
 	struct mdso_object *		vobj)
 {
 	struct mdso_symfn_object *	symfn;
 	struct pe_raw_coff_symbol *	symrec;
 	const unsigned char *		code;
+	void *				addr;
 	unsigned char *			mark;
 	unsigned char *			mapsym;
 	struct pe_raw_aux_rec_section *	aux;
@@ -80,21 +81,25 @@ int mdso_objgen_symfn(
 	objlen = sizeof(*symfn) + cstlen;
 	uscore = !(dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR);
 
-	if (vobj && vobj->addr && (vobj->size < objlen))
+	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
 
-	if (vobj && !vobj->addr) {
-		vobj->size = objlen;
+	if ((addr = vobj->addr)) {
+		(void)0;
+
+	} else {
+		vobj->size       = objlen;
 		vobj->mapstrsnum = 1;
 		vobj->mapstrslen = 1 + uscore + symlen;
-		return 0;
+
+		if (!vobj->name)
+			return 0;
+
+		else if (mdso_create_object(dctx,vobj) < 0)
+			return MDSO_NESTED_ERROR(dctx);
 	}
 
-	if (vobj)
-		symfn = (struct mdso_symfn_object *)vobj->addr;
-
-	else if (!(symfn = calloc(1,objlen)))
-		return MDSO_SYSTEM_ERROR(dctx);
+	symfn = (struct mdso_symfn_object *)vobj->addr;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		code    = jmp_code_amd64;
@@ -206,7 +211,7 @@ int mdso_objgen_symfn(
 	symrec += 2;
 
 	/* archive symbol map */
-	if (vobj && vobj->mapstrs)
+	if (vobj->mapstrs)
 		memcpy(vobj->mapstrs,mapsym,mark-mapsym);
 
 	/* coff symbol: __imp_sym */
@@ -227,13 +232,10 @@ int mdso_objgen_symfn(
 		mark++;
 	}
 
+	/* fs object unmap */
+	if (!addr)
+		munmap(vobj->addr,vobj->size);
+
 	/* tada */
-	if (fout)
-		if (fwrite(symfn,objlen,1,fout) == 0)
-			return MDSO_FILE_ERROR(dctx);
-
-	if (!vobj)
-		free(symfn);
-
 	return 0;
 }

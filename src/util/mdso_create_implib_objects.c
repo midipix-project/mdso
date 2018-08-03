@@ -24,14 +24,19 @@ static void mdso_init_objname(char * buf, const char * fmt, const char * str)
 		sprintf(buf,fmt,str);
 }
 
-mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
+static void mdso_init_object(struct mdso_object * obj, const char * objname)
 {
-	struct mdso_unit_ctx *	uctx;
+	memset(obj,0,sizeof(*obj));
+	obj->name = objname;
+}
+
+int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
+{
 	const char **		unit;
-	FILE *			fout;
-	char			objname[PATH_MAX];
+	struct mdso_unit_ctx *	uctx;
+	struct mdso_object	obj;
 	const char * const *	sym;
-	int			ret;
+	char			objname[PATH_MAX];
 
 	/* symentry, symfn */
 	for (unit=dctx->units; *unit; unit++) {
@@ -40,26 +45,16 @@ mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 
 		for (sym=uctx->syms; *sym; sym++) {
 			mdso_init_objname(objname,".%s_symentry.o",*sym);
+			mdso_init_object(&obj,objname);
 
-			if (!(fout = mdso_create_object(dctx,objname)))
-				return MDSO_NESTED_ERROR(dctx);
-
-			ret = mdso_objgen_symentry(dctx,*sym,fout,0);
-			fclose(fout);
-
-			if (ret < 0)
+			if (mdso_objgen_symentry(dctx,*sym,&obj) < 0)
 				return MDSO_NESTED_ERROR(dctx);
 
 			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
 				mdso_init_objname(objname,".%s_symfn.o",*sym);
+				mdso_init_object(&obj,objname);
 
-				if (!(fout = mdso_create_object(dctx,objname)))
-					return MDSO_NESTED_ERROR(dctx);
-
-				ret = mdso_objgen_symfn(dctx,*sym,fout,0);
-				fclose(fout);
-
-				if (ret < 0)
+				if (mdso_objgen_symfn(dctx,*sym,&obj) < 0)
 					return MDSO_NESTED_ERROR(dctx);
 			}
 		}
@@ -69,13 +64,10 @@ mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 
 	/* dsometa */
 	mdso_init_objname(objname,".dsometa_%s.o",dctx->cctx->libname);
+	mdso_init_object(&obj,objname);
 
-	if (!(fout = mdso_create_object(dctx,objname)))
+	if (mdso_objgen_dsometa(dctx,&obj) < 0)
 		return MDSO_NESTED_ERROR(dctx);
 
-	ret = mdso_objgen_dsometa(dctx,fout,0);
-	fclose(fout);
-
-	return (ret < 0) ? MDSO_NESTED_ERROR(dctx) : 0;
-
+	return 0;
 }
