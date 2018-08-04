@@ -186,7 +186,7 @@ int mdso_output_error_record(
 	else if (dctx->cctx->drvflags & MDSO_DRIVER_ANNOTATE_ALWAYS)
 		return mdso_output_error_record_annotated(dctx,erri);
 
-	else if (isatty(STDERR_FILENO))
+	else if (isatty(mdso_driver_fderr(dctx)))
 		return mdso_output_error_record_annotated(dctx,erri);
 
 	else
@@ -223,7 +223,7 @@ int mdso_output_error_vector(const struct mdso_driver_ctx * dctx)
 	else if (dctx->cctx->drvflags & MDSO_DRIVER_ANNOTATE_ALWAYS)
 		return mdso_output_error_vector_annotated(dctx);
 
-	else if (isatty(STDERR_FILENO))
+	else if (isatty(mdso_driver_fderr(dctx)))
 		return mdso_output_error_vector_annotated(dctx);
 
 	else
