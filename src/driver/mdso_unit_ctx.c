@@ -35,56 +35,66 @@ static int mdso_free_unit_ctx_impl(struct mdso_unit_ctx_impl * ctx, int status)
 	return status;
 }
 
-static FILE * mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
+static int mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 {
 	struct mdso_driver_ctx_impl *	ictx;
 	uintptr_t			addr;
 	int				fdtmp;
 
-	FILE *	ftmp;
+	ssize_t ret;
+	ssize_t cnt;
+	char *	ch;
 	char	buf[4096];
-	ssize_t	nread;
-	int	ret;
+	char	template[] = "/tmp/mdso_stdin_to_tmp_XXXXXX";
 
 	addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
 	ictx = (struct mdso_driver_ctx_impl *)addr;
 
-	if (ictx->fdtmpin >= 0) {
-		if ((fdtmp = dup(ictx->fdtmpin)) < 0)
-			return 0;
+	if (ictx->fdtmpin >= 0)
+		return dup(ictx->fdtmpin);
 
-		if (!(ftmp = fdopen(fdtmp,"r")))
-			close(fdtmp);
+	if ((fdtmp = mkstemp(template)) < 0)
+		return -1;
 
-		return ftmp;
+	if ((ictx->fdtmpin = dup(fdtmp)) < 0) {
+		close(fdtmp);
+		return -1;
 	}
 
-	if (!(ftmp = tmpfile()))
-		return 0;
+	while (1) {
+		ret = read(0,buf,sizeof(buf)-1);
 
-	if ((ictx->fdtmpin = dup(fileno(ftmp))) < 0) {
-		fclose(ftmp);
-		return 0;
-	}
-
-	nread = read(0,buf,sizeof(buf)-1);
-
-	while (nread) {
-		if (nread > 0) {
-			buf[nread] = '\0';
-			ret = fputs(buf,ftmp);
-		} else
-			ret = (errno == EINTR) ? 0 : -1;
+		while ((ret < 0) && (errno == EINTR))
+			ret = read(0,buf,sizeof(buf)-1);
 
 		if (ret < 0) {
-			fclose(ftmp);
-			return 0;
+			close(fdtmp);
+			return -1;
+
+		} else if (ret == 0) {
+			return fdtmp;
+
+		} else {
+			ch  = buf;
+			cnt = ret;
+			ret = 0;
+
+			for (; cnt; ) {
+				ret = write(fdtmp,ch,cnt);
+
+				while ((ret < 0) && (errno == EINTR))
+					ret = write(fdtmp,ch,cnt);
+
+				if (ret < 0) {
+					close(fdtmp);
+					return -1;
+				}
+
+				ch  += ret;
+				cnt -= ret;
+			}
 		}
-
-		nread = read(0,buf,sizeof(buf)-1);
 	}
-
-	return ftmp;
 }
 
 static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
@@ -186,7 +196,6 @@ int mdso_get_unit_ctx(
 	struct mdso_unit_ctx **		pctx)
 {
 	struct mdso_unit_ctx_impl *	ctx;
-	FILE *				ftmp;
 	int				fd;
 
 	if (!dctx)
@@ -201,22 +210,15 @@ int mdso_get_unit_ctx(
 	if (strcmp(path,"-"))
 		fd = -1;
 
-	else if (!(ftmp = mdso_stdin_to_tmp(dctx)))
+	else if ((fd = mdso_stdin_to_tmp(dctx)) < 0)
 		return mdso_free_unit_ctx_impl(
 			ctx,MDSO_FILE_ERROR(dctx));
-
-	else if ((fd = dup(fileno(ftmp))) < 0)
-		return mdso_free_unit_ctx_impl(
-			ctx,MDSO_SYSTEM_ERROR(dctx));
-
-	else
-		fclose(ftmp);
 
 	if (mdso_map_input(dctx,fd,path,PROT_READ,&ctx->map))
 		return mdso_free_unit_ctx_impl(
 			ctx,MDSO_NESTED_ERROR(dctx));
 
-	if (fd > 0)
+	if (fd >= 0)
 		close(fd);
 
 	if (mdso_create_symbol_vector(ctx))
@@ -235,6 +237,7 @@ int mdso_get_unit_ctx(
 	ctx->uctx.stype	= ctx->expsyms->stype;
 
 	*pctx = &ctx->uctx;
+
 	return 0;
 }
 
