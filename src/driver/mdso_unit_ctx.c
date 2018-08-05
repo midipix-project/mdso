@@ -61,7 +61,7 @@ static int mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 		return -1;
 	}
 
-	while (1) {
+	for (;;) {
 		ret = read(0,buf,sizeof(buf)-1);
 
 		while ((ret < 0) && (errno == EINTR))

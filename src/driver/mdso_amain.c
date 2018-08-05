@@ -33,7 +33,7 @@ static const char * const mdso_ver_plain[6] = {
 		"",""
 };
 
-static ssize_t mdso_version(int fdout, struct mdso_driver_ctx * dctx)
+static ssize_t mdso_version(struct mdso_driver_ctx * dctx, int fdout)
 {
 	const struct mdso_source_version * verinfo;
 	const char * const * verclr;
@@ -82,7 +82,7 @@ int mdso_main(int argc, char ** argv, char ** envp, const struct mdso_fd_ctx * f
 			: MDSO_ERROR;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_VERSION)
-		if ((mdso_version(fdout,dctx)) < 0)
+		if ((mdso_version(dctx,fdout)) < 0)
 			return mdso_exit(dctx,MDSO_ERROR);
 
 	if (dctx->cctx->implib)
