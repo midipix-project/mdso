@@ -26,7 +26,7 @@ static int mdso_create_output(
 	fddst = mdso_driver_fddst(dctx);
 
 	if ((fdout = openat(fddst,name,
-			O_CREAT|O_TRUNC|O_WRONLY|O_NOCTTY|O_NOFOLLOW,
+			O_CREAT|O_TRUNC|O_RDWR|O_NOCTTY|O_NOFOLLOW,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) < 0)
 		return MDSO_SYSTEM_ERROR(dctx);
 
