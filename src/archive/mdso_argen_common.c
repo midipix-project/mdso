@@ -31,6 +31,7 @@ static void mdso_argen_common_hdr(
 	arhdr->ar_uid[0] = '0';
 	arhdr->ar_gid[0] = '0';
 	arhdr->ar_file_mode[0] = '0';
+	arhdr->ar_time_date_stamp[0] = '0';
 
 	slen = sprintf(sbuf,"%zu",size);
 	memcpy(arhdr->ar_file_size,sbuf,slen);
