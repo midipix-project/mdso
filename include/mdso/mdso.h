@@ -159,7 +159,7 @@ mdso_api int  mdso_create_object        (const struct mdso_driver_ctx *, struct 
 mdso_api int  mdso_create_archive       (const struct mdso_driver_ctx *, struct mdso_object *);
 
 /* utility api */
-mdso_api int  mdso_main                 (int, char **, char **, const struct mdso_fd_ctx *);
+mdso_api int  mdso_main                 (char **, char **, const struct mdso_fd_ctx *);
 mdso_api int  mdso_create_implib_archive(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);

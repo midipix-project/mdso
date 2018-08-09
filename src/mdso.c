@@ -8,5 +8,5 @@
 
 int main(int argc, char ** argv, char ** envp)
 {
-	return mdso_main(argc,argv,envp,0);
+	return mdso_main(argv,envp,0);
 }

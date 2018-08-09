@@ -64,7 +64,7 @@ static int mdso_exit(struct mdso_driver_ctx * dctx, int ret)
 	return ret;
 }
 
-int mdso_main(int argc, char ** argv, char ** envp, const struct mdso_fd_ctx * fdctx)
+int mdso_main(char ** argv, char ** envp, const struct mdso_fd_ctx * fdctx)
 {
 	int				ret;
 	int				fdout;
@@ -78,7 +78,7 @@ int mdso_main(int argc, char ** argv, char ** envp, const struct mdso_fd_ctx * f
 
 	if ((ret = mdso_get_driver_ctx(argv,envp,flags,fdctx,&dctx)))
 		return (ret == MDSO_USAGE)
-			? !--argc
+			? !argv || !argv[0] || !argv[1]
 			: MDSO_ERROR;
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_VERSION)
