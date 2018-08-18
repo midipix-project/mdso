@@ -42,7 +42,7 @@ struct mdso_driver_ctx_alloc {
 
 static uint32_t mdso_argv_flags(uint32_t flags)
 {
-	uint32_t ret = 0;
+	uint32_t ret = ARGV_CLONE_VECTOR;
 
 	if (flags & MDSO_DRIVER_VERBOSITY_NONE)
 		ret |= ARGV_VERBOSITY_NONE;
