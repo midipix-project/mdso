@@ -176,6 +176,12 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 			? MDSO_SYMBOL_TYPE_DATA
 			: MDSO_SYMBOL_TYPE_CODE;
 
+		/* code vs. data: pending changes to the midipix gcc target  */
+		/* bits will remove the need to create .text thunks; in the  */
+		/* meantime, however, treat everything as code to compensate */
+		/* for ld's incorrectly generated .def files.                */
+		stype = MDSO_SYMBOL_TYPE_CODE;
+
 		ctx->expsyms->stype[sym - ctx->expsyms->syms] = stype;
 		sym++;
 
