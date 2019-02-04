@@ -38,7 +38,7 @@ int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 	const char * const *	sym;
 	char			objname[PATH_MAX];
 
-	/* symentry, symfn */
+	/* symentry */
 	for (unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,&uctx))
 			return MDSO_NESTED_ERROR(dctx);
@@ -49,14 +49,6 @@ int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 
 			if (mdso_objgen_symentry(dctx,*sym,&obj) < 0)
 				return MDSO_NESTED_ERROR(dctx);
-
-			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
-				mdso_init_objname(objname,".%s_symfn.o",*sym);
-				mdso_init_object(&obj,objname);
-
-				if (mdso_objgen_symfn(dctx,*sym,&obj) < 0)
-					return MDSO_NESTED_ERROR(dctx);
-			}
 		}
 
 		mdso_free_unit_ctx(uctx);

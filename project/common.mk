@@ -9,10 +9,8 @@ API_SRCS = \
 	src/helper/mdso_map_input.c \
 	src/logic/mdso_asmgen_dsometa.c \
 	src/logic/mdso_asmgen_symentry.c \
-	src/logic/mdso_asmgen_symfn.c \
 	src/object/mdso_objgen_dsometa.c \
 	src/object/mdso_objgen_symentry.c \
-	src/object/mdso_objgen_symfn.c \
 	src/output/mdso_output_error.c \
 	src/output/mdso_output_export_symbols.c \
 	src/skin/mdso_skin_default.c \

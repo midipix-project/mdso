@@ -22,9 +22,6 @@ static int mdso_free_unit_ctx_impl(struct mdso_unit_ctx_impl * ctx, int status)
 		if (ctx->expsyms && ctx->expsyms->buffer)
 			free(ctx->expsyms->buffer);
 
-		if (ctx->expsyms && ctx->expsyms->stype)
-			free(ctx->expsyms->stype);
-
 		if (ctx->expsyms)
 			free(ctx->expsyms);
 
@@ -103,10 +100,8 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 	size_t		nbytes;
 	size_t		size;
 	char *		dst;
-	const char *	base;
 	const char *	ch;
 	const char **	sym;
-	int		stype;
 
 	const char	exphdr[] = "EXPORTS\n";
 	const char	imphdr[] = "IMPORTS\n";
@@ -126,10 +121,6 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 	if (!(ctx->expsyms->buffer = calloc(1,ctx->map.size)))
 		return -1;
 
-	if (!(ctx->expsyms->stype = calloc(nsyms,sizeof(int))))
-		return -1;
-
-	base	= ctx->map.addr;
 	ch	= ctx->map.addr;
 	nbytes	= ctx->map.size;
 	sym	= ctx->expsyms->syms;
@@ -154,7 +145,7 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 
 	while (nbytes && ((nbytes < size) || (strncmp(ch,imphdr,size)))) {
 		/* vector */
-		*sym = dst;
+		*sym++ = dst;
 
 		/* symbol */
 		for (; nbytes && ((*ch!=' ')
@@ -168,22 +159,6 @@ static int mdso_create_symbol_vector(struct mdso_unit_ctx_impl * ctx)
 		/* discard rest of input line */
 		for (; nbytes && (*ch!='\n'); nbytes--)
 			ch++;
-
-		/* stype */
-		stype = ((*ch=='\n')
-				&& ((ch-base) >= 6)
-				&& !strncmp(&ch[-5]," DATA\n",6))
-			? MDSO_SYMBOL_TYPE_DATA
-			: MDSO_SYMBOL_TYPE_CODE;
-
-		/* code vs. data: pending changes to the midipix gcc target  */
-		/* bits will remove the need to create .text thunks; in the  */
-		/* meantime, however, treat everything as code to compensate */
-		/* for ld's incorrectly generated .def files.                */
-		stype = MDSO_SYMBOL_TYPE_CODE;
-
-		ctx->expsyms->stype[sym - ctx->expsyms->syms] = stype;
-		sym++;
 
 		/* advance to next symbol */
 		for (; nbytes && ((*ch==' ')
@@ -240,7 +215,6 @@ int mdso_get_unit_ctx(
 	ctx->uctx.map	= &ctx->map;
 	ctx->uctx.cctx	= &ctx->cctx;
 	ctx->uctx.syms	= ctx->expsyms->syms;
-	ctx->uctx.stype	= ctx->expsyms->stype;
 
 	*pctx = &ctx->uctx;
 

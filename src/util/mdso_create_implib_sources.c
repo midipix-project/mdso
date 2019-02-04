@@ -35,7 +35,7 @@ int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 	int			ret;
 
 
-	/* symentry, symfn */
+	/* symentry */
 	for (unit=dctx->units; *unit; unit++) {
 		if (mdso_get_unit_ctx(dctx,*unit,&uctx))
 			return MDSO_NESTED_ERROR(dctx);
@@ -53,21 +53,6 @@ int  mdso_create_implib_sources(const struct mdso_driver_ctx * dctx)
 
 			if (ret < 0)
 				return MDSO_NESTED_ERROR(dctx);
-
-			if (uctx->stype[sym-uctx->syms] == MDSO_SYMBOL_TYPE_CODE) {
-				mdso_init_asmname(asmname,".%s_symfn.s",*sym);
-
-				if ((fdout = mdso_create_asmsrc(dctx,asmname)) < 0)
-					return MDSO_NESTED_ERROR(dctx);
-
-				ret = mdso_asmgen_symfn(dctx,*sym,fdout);
-
-				if (fdout != mdso_driver_fdout(dctx))
-					close(fdout);
-
-				if (ret < 0)
-					return MDSO_NESTED_ERROR(dctx);
-			}
 		}
 
 		mdso_free_unit_ctx(uctx);

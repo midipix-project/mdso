@@ -40,10 +40,6 @@ extern "C" {
 #define MDSO_DRIVER_ANNOTATE_NEVER	0x2000
 #define MDSO_DRIVER_ANNOTATE_FULL	0x4000
 
-/* symbol characteristics */
-#define MDSO_SYMBOL_TYPE_CODE		0x0001
-#define MDSO_SYMBOL_TYPE_DATA		0x0002
-
 /* error flags */
 #define MDSO_ERROR_TOP_LEVEL		0x0001
 #define MDSO_ERROR_NESTED		0x0002
@@ -134,7 +130,6 @@ struct mdso_unit_ctx {
 	const struct mdso_input *	map;
 	const struct mdso_common_ctx *	cctx;
 	const char * const *		syms;
-	const int *			stype;
 	void *				any;
 };
 
@@ -180,14 +175,12 @@ mdso_api uint64_t mdso_crc64_mbstr      (const unsigned char *, size_t *);
 
 mdso_api int      mdso_asmgen_dsometa   (const struct mdso_driver_ctx *, int);
 mdso_api int      mdso_asmgen_symentry  (const struct mdso_driver_ctx *, const char *, int);
-mdso_api int      mdso_asmgen_symfn     (const struct mdso_driver_ctx *, const char *, int);
 
 mdso_api int      mdso_objgen_dsometa   (const struct mdso_driver_ctx *, struct mdso_object *);
 mdso_api int      mdso_objgen_symentry  (const struct mdso_driver_ctx *, const char *, struct mdso_object *);
-mdso_api int      mdso_objgen_symfn     (const struct mdso_driver_ctx *, const char *, struct mdso_object *);
 
 mdso_api int      mdso_argen_common     (const struct mdso_driver_ctx *,
-                                         const char **, const int *,
+                                         const char **,
                                          struct mdso_object *);
 
 /* package info */
