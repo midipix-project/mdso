@@ -16,7 +16,7 @@
 #define MDSO_FLAG_SYSTEM32	0x0008
 
 struct mdso_arg;
-struct mdso_meta_table;
+struct mdso_meta_record;
 struct mdso_hash_table;
 struct mdso_sym_table;
 
@@ -35,7 +35,7 @@ struct mdso_ref_entry {
 
 struct mdso_sym_entry {
 	char *				string;
-	struct mdso_meta_table *	meta;
+	struct mdso_meta_record *	meta;
 };
 
 struct mdso_meta_record {
