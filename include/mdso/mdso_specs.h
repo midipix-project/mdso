@@ -8,6 +8,7 @@
 #define MDSO_STRS_SECTION	".dsostrs"
 #define MDSO_HASH_SECTION	".dsohash"
 #define MDSO_DATA_SECTION	".dsodata"
+#define MDSO_REFS_SECTION	".gotrefs"
 
 #define MDSO_FLAG_LOADER_PATH	0x0001
 #define MDSO_FLAG_LDSO_LIB	0x0002
@@ -25,6 +26,11 @@ typedef int32_t mdso_arg_arr_conv_fn(struct mdso_arg *);
 struct mdso_arg {
 	char *		utf8;
 	uint16_t *	utf16;
+};
+
+struct mdso_ref_entry {
+	void *				addr;
+	char *				string;
 };
 
 struct mdso_sym_entry {

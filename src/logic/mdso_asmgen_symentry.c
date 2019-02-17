@@ -13,10 +13,11 @@
 #include "mdso_errinfo_impl.h"
 
 static const char * const asm_lines[] = {
-	"\t.section  " MDSO_STRS_SECTION ",\"r0\"\n\n",
-	".symstr:\n",
-	"\t.ascii\t\"%s\\0\"\n\n"
-	"\t.section  " MDSO_SYMS_SECTION ",\"r\"\n",
+	"\t.section  " MDSO_STRS_SECTION "$%s,\"r0\"\n\n",
+	".symstr_%s:\n",
+	"\t.ascii\t\"%s\\0\"\n"
+	"\t.linkonce discard\n\n",
+	"\t.section  " MDSO_SYMS_SECTION "$%s,\"r\"\n",
 	0
 };
 
@@ -56,10 +57,13 @@ int mdso_asmgen_symentry(
 	if ((mdso_dprintf(fdout,"__imp_%s%s:\n",uscore,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((mdso_dprintf(fdout,"\t%s\t.symstr\n",ptrsize)) < 0)
+	if ((mdso_dprintf(fdout,"\t%s\t.symstr_%s\n",ptrsize,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if ((mdso_dprintf(fdout,"\t%s\t.dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
+		return MDSO_FILE_ERROR(dctx);
+
+	if ((mdso_dprintf(fdout,"\t.linkonce discard\n")) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	return 0;

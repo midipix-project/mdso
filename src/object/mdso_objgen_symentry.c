@@ -12,19 +12,20 @@
 #include <sys/mman.h>
 
 #include <mdso/mdso.h>
+#include <mdso/mdso_specs.h>
 #include "mdso_object_impl.h"
 #include "mdso_errinfo_impl.h"
 #include "perk_consts.h"
 #include "perk_structs.h"
 
-struct mdso_symfn_references {
-	unsigned char 	refs[16];
+struct mdso_symfn_refs {
+	unsigned char refs[16];
 };
 
 struct mdso_symentry_object {
 	struct pe_raw_coff_object_hdr	hdr;
 	struct pe_raw_sec_hdr		sec[2];
-	struct mdso_symfn_references	ref[1];
+	struct mdso_symfn_refs		ref[1];
 	struct pe_raw_coff_reloc	rel[2];
 	struct pe_raw_coff_symbol	sym[9];
 	struct pe_raw_coff_strtbl	cst;
@@ -38,13 +39,13 @@ int mdso_objgen_symentry(
 	struct mdso_symentry_object *	syment;
 	struct pe_raw_coff_symbol *	symrec;
 	void *				addr;
-	unsigned char *			mark;
-	unsigned char *			mapsym;
+	void *				mark;
+	char *				ch;
+	char *				strtbl;
 	struct pe_raw_aux_rec_section *	aux;
-	size_t				buflen;
 	size_t				liblen;
 	uint32_t			symlen;
-	uint32_t			cstlen;
+	size_t				cstlen;
 	uint32_t			objlen;
 	uint32_t			aattr;
 	uint32_t			sattr;
@@ -56,21 +57,40 @@ int mdso_objgen_symentry(
 	uint32_t			refoff;
 	uint32_t			reloff;
 	uint32_t			symoff;
-	uint32_t			cstoff;
-	uint32_t			datoff;
-	uint32_t			stroff;
 	uint32_t			uscore;
+	uint32_t			stroff;
+	uint32_t			stroff_cstdata;
+	uint32_t			stroff_file;
+	uint32_t			stroff_dsosyms;
+	uint32_t			stroff_dsostrs;
+	uint32_t			stroff_symstr;
+	uint32_t			stroff_impsym;
+	uint32_t			stroff_libname;
+	uint32_t			stroff_null;
 
-	if ((buflen = strlen(sym)) > 1024*1024)
+	if ((symlen = (uint32_t)strlen(sym)) > 1024*1024)
 		return MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_DATA);
 
 	if ((liblen = strlen(dctx->cctx->libname)) > 1024*1024)
 		return MDSO_CUSTOM_ERROR(dctx,MDSO_ERR_INVALID_DATA);
 
-	symlen = (uint32_t)buflen;
-	cstlen = (uint32_t)liblen + (3 * symlen) + 64;
-	objlen = sizeof(*syment) + cstlen;
-	uscore = !(dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR);
+	stroff_cstdata = offsetof(struct pe_raw_coff_strtbl,cst_data);
+	stroff_file    = stroff_cstdata;
+	stroff_dsosyms = stroff_file    + 13 + symlen;   /* .foo_symentry.s  */
+	stroff_dsostrs = stroff_dsosyms + 10 + symlen;   /* .dsosyms$foo     */
+	stroff_symstr  = stroff_dsostrs + 10 + symlen;   /* .dsostrs$foo     */
+	stroff_impsym  = stroff_symstr  + 9  + symlen;   /* .symstr_foo      */
+	stroff_libname = stroff_impsym  + 8  + symlen;   /* __imp__foo       */
+	stroff_null    = stroff_libname + 10 + liblen;   /* .dsometa_libname */
+
+	stroff  = offsetof(struct mdso_symentry_object,cst) + stroff_null;
+	stroff += 0xf;
+	stroff |= 0xf;
+	stroff ^= 0xf;
+
+	cstlen  = stroff_null;
+	objlen  = stroff + symlen + 1;
+	uscore  = !(dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR);
 
 	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
@@ -107,22 +127,17 @@ int mdso_objgen_symentry(
 	sattr  = PE_IMAGE_SCN_ALIGN_1BYTES;
 	sattr |= PE_IMAGE_SCN_MEM_READ;
 	sattr |= PE_IMAGE_SCN_CNT_INITIALIZED_DATA;
+	sattr |= PE_IMAGE_SCN_LNK_COMDAT;
 
 	rattr  = aattr;
 	rattr |= PE_IMAGE_SCN_MEM_READ;
 	rattr |= PE_IMAGE_SCN_CNT_INITIALIZED_DATA;
+	rattr |= PE_IMAGE_SCN_LNK_COMDAT;
 
 	oattr  = PE_IMAGE_FILE_LINE_NUMS_STRIPPED;
 	refoff = offsetof(struct mdso_symentry_object,ref);
 	reloff = offsetof(struct mdso_symentry_object,rel);
 	symoff = offsetof(struct mdso_symentry_object,sym);
-	cstoff = offsetof(struct pe_raw_coff_strtbl,cst_data);
-	datoff = 0;
-
-	stroff  = objlen - symlen - 16;
-	stroff += 0xf;
-	stroff |= 0xf;
-	stroff ^= 0xf;
 
 	/* coff object header */
 	mdso_obj_write_short(syment->hdr.cfh_machine,machine);
@@ -132,13 +147,13 @@ int mdso_objgen_symentry(
 	mdso_obj_write_short(syment->hdr.cfh_characteristics,oattr);
 
 	/* .dsostrs section header */
-	memcpy(syment->sec[0].sh_name,".dsostrs",8);
+	sprintf((char *)syment->sec[0].sh_name,"/%d",stroff_dsostrs);
 	mdso_obj_write_long(syment->sec[0].sh_size_of_raw_data,symlen+1);
 	mdso_obj_write_long(syment->sec[0].sh_ptr_to_raw_data,stroff);
 	mdso_obj_write_long(syment->sec[0].sh_characteristics,sattr);
 
 	/* .dsosyms section header */
-	memcpy(syment->sec[1].sh_name,".dsosyms",8);
+	sprintf((char *)syment->sec[1].sh_name,"/%d",stroff_dsosyms);
 	mdso_obj_write_long(syment->sec[1].sh_size_of_raw_data,2*relrva);
 	mdso_obj_write_long(syment->sec[1].sh_ptr_to_raw_data,refoff);
 	mdso_obj_write_long(syment->sec[1].sh_ptr_to_relocs,reloff);
@@ -157,25 +172,22 @@ int mdso_objgen_symentry(
 
 	/* coff string table */
 	mdso_obj_write_long(syment->cst.cst_size,cstlen);
+	mark   = &syment->cst;
+	strtbl = mark;
 
 	/* coff symbol table */
 	symrec = syment->sym;
-	mark   = syment->cst.cst_data;
 
 	/* coff symbol: .file */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_FILE;
 	symrec[0].cs_num_of_aux_symbols[0] = 1;
 
 	mdso_obj_write_short(&symrec[0].cs_section_number[0],PE_IMAGE_SYM_DEBUG);
-	mdso_obj_write_long(&symrec[1].cs_name[4],cstoff+datoff);
+	mdso_obj_write_long(&symrec[1].cs_name[4],stroff_file);
 
 	memcpy(symrec[0].cs_name,".file",5);
-	memcpy(&mark[0],".",1);
-	memcpy(&mark[1],sym,symlen);
-	memcpy(&mark[1+symlen],"_symentry.s",11);
+	sprintf(&strtbl[stroff_file],".%s_symentry.s",sym);
 
-	datoff += 13 + symlen;
-	mark   += 13 + symlen;
 	symrec += 2;
 
 	/* coff symbol: .dsostrs */
@@ -183,14 +195,13 @@ int mdso_objgen_symentry(
 	symrec[0].cs_num_of_aux_symbols[0] = 1;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
-	memcpy(symrec[0].cs_name,".dsostrs",8);
+	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsostrs);
+	sprintf(&strtbl[stroff_dsostrs],"%s$%s",MDSO_STRS_SECTION,sym);
 
 	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,symlen+1);
 	mdso_obj_write_short(aux->aux_num_of_relocs,0);
 
-	datoff += 0;
-	mark   += 0;
 	symrec += 2;
 
 	/* coff symbol: .dsosyms */
@@ -198,14 +209,13 @@ int mdso_objgen_symentry(
 	symrec[0].cs_num_of_aux_symbols[0] = 1;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
-	memcpy(symrec[0].cs_name,".dsosyms",8);
+	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsosyms);
+	sprintf(&strtbl[stroff_dsosyms],"%s$%s",MDSO_SYMS_SECTION,sym);
 
 	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,2*relrva);
 	mdso_obj_write_short(aux->aux_num_of_relocs,2);
 
-	datoff += 0;
-	mark   += 0;
 	symrec += 2;
 
 	/* coff symbol: .symstr */
@@ -213,52 +223,40 @@ int mdso_objgen_symentry(
 	symrec[0].cs_num_of_aux_symbols[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
-	memcpy(symrec[0].cs_name,".symstr",7);
+	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_symstr);
+	sprintf(&strtbl[stroff_symstr],".symstr_%s",sym);
 
-	datoff += 0;
-	mark   += 0;
 	symrec += 1;
 
 	/* coff symbol: __imp_sym */
-	mapsym = mark;
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
 	symrec[0].cs_num_of_aux_symbols[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
-	mdso_obj_write_long(&symrec[0].cs_name[4],cstoff+datoff);
+	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_impsym);
+	sprintf(&strtbl[stroff_impsym],"__imp_%s%s",uscore ? "_" : "", sym);
 
-	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
-		memcpy(&mark[0],"__imp_",6);
-		memcpy(&mark[6],sym,symlen);
-	} else {
-		memcpy(&mark[0],"__imp_",6);
-		memcpy(&mark[7],sym,symlen);
-		mark[6] = '_';
-		datoff++;
-		mark++;
-	}
-
-	datoff += 7 + symlen;
-	mark   += 7 + symlen;
 	symrec += 1;
 
 	/* archive symbol map */
 	if (vobj->mapstrs)
-		memcpy(vobj->mapstrs,mapsym,mark-mapsym);
+		strcpy(vobj->mapstrs,&strtbl[stroff_impsym]);
 
 	/* coff symbol: .dsometa_libname */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
 	symrec[0].cs_num_of_aux_symbols[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,0);
-	mdso_obj_write_long(&symrec[0].cs_name[4],cstoff+datoff);
+	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_libname);
 
-	memcpy(&mark[0],".dsometa_",9);
-	memcpy(&mark[9],dctx->cctx->libname,liblen);
+	sprintf(&strtbl[stroff_libname],"%s_%s",
+		MDSO_META_SECTION,
+		dctx->cctx->libname);
 
 	/* .symstr */
-	mark = syment->hdr.cfh_machine;
-	memcpy(&mark[stroff],sym,symlen);
+	mark = syment;
+	ch   = mark;
+	memcpy(&ch[stroff],sym,symlen);
 
 	/* fs object unmap */
 	if (!addr)
