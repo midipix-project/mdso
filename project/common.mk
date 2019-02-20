@@ -13,6 +13,7 @@ API_SRCS = \
 	src/object/mdso_objgen_symentry.c \
 	src/output/mdso_output_error.c \
 	src/output/mdso_output_export_symbols.c \
+	src/output/mdso_output_expsyms_crc.c \
 	src/skin/mdso_skin_default.c \
 	src/util/mdso_create_implib_archive.c \
 	src/util/mdso_create_implib_objects.c \
