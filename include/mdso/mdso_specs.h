@@ -28,7 +28,7 @@ struct mdso_arg {
 	uint16_t *	utf16;
 };
 
-struct mdso_ref_entry {
+struct mdso_def_entry {
 	void *				addr;
 	char *				string;
 };
@@ -36,6 +36,11 @@ struct mdso_ref_entry {
 struct mdso_sym_entry {
 	char *				string;
 	struct mdso_meta_record *	meta;
+};
+
+struct mdso_ref_entry {
+	uintptr_t *			backref;
+	uintptr_t *			symref;
 };
 
 struct mdso_meta_record {
