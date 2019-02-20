@@ -28,7 +28,7 @@ int mdso_asmgen_symentry(
 {
 	const char * const *	line;
 	const char *		alignstr;
-	const char *		ptrsize;
+	const char *		rvapad;
 	const char *		uscore;
 
 	if (mdso_dprintf(fdout,"\t.file     \".%s_symentry.s\"\n",sym) < 0)
@@ -36,11 +36,11 @@ int mdso_asmgen_symentry(
 
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		alignstr = "\t.balign   16\n\n";
-		ptrsize  = ".quad";
+		rvapad   = "\t.long     0\n";
 		uscore   = "";
 	} else {
 		alignstr = "\t.balign   8\n\n";
-		ptrsize  = ".long";
+		rvapad   = "";
 		uscore   = "_";
 	}
 
@@ -57,10 +57,12 @@ int mdso_asmgen_symentry(
 	if ((mdso_dprintf(fdout,"__imp_%s%s:\n",uscore,sym)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((mdso_dprintf(fdout,"\t%s\t.symstr_%s\n",ptrsize,sym)) < 0)
+	if ((mdso_dprintf(fdout,"\t.rva\t.symstr_%s\n%s",
+			sym,rvapad)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
-	if ((mdso_dprintf(fdout,"\t%s\t.dsometa_%s\n",ptrsize,dctx->cctx->libname)) < 0)
+	if ((mdso_dprintf(fdout,"\t.rva\t.dsometa_%s\n%s",
+			dctx->cctx->libname,rvapad)) < 0)
 		return MDSO_FILE_ERROR(dctx);
 
 	if ((mdso_dprintf(fdout,"\t.linkonce discard\n")) < 0)

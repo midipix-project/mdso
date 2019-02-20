@@ -115,12 +115,12 @@ int mdso_objgen_symentry(
 	if (dctx->cctx->drvflags & MDSO_DRIVER_QUAD_PTR) {
 		aattr   = PE_IMAGE_SCN_ALIGN_16BYTES;
 		machine = PE_IMAGE_FILE_MACHINE_AMD64;
-		reltype = PE_IMAGE_REL_AMD64_ADDR64;
+		reltype = PE_IMAGE_REL_AMD64_ADDR32NB;
 		relrva  = 8;
 	} else {
 		aattr   = PE_IMAGE_SCN_ALIGN_4BYTES;
 		machine = PE_IMAGE_FILE_MACHINE_I386;
-		reltype = PE_IMAGE_REL_I386_DIR32;
+		reltype = PE_IMAGE_REL_I386_DIR32NB;
 		relrva  = 4;
 	}
 

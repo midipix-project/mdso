@@ -33,14 +33,19 @@ struct mdso_def_entry {
 	char *				string;
 };
 
+struct mdso_got_entry {
+	void *				addr;
+	uintptr_t			rsymstr;
+};
+
 struct mdso_sym_entry {
-	char *				string;
-	struct mdso_meta_record *	meta;
+	uintptr_t			rsymstr;
+	uintptr_t			rmeta;
 };
 
 struct mdso_ref_entry {
-	uintptr_t *			backref;
-	uintptr_t *			symref;
+	uintptr_t			rbackref;
+	uintptr_t			rsymref;
 };
 
 struct mdso_meta_record {
