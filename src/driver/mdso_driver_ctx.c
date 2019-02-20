@@ -250,6 +250,17 @@ int mdso_get_driver_ctx(
 					cctx.drvflags |= MDSO_DRIVER_GENERATE_OBJECTS;
 					break;
 
+				case TAG_CRC:
+					if (!(strcmp(entry->arg,"64"))) {
+						cctx.drvflags &= ~(uint64_t)MDSO_DRIVER_COMPUTE_CRC32;
+						cctx.drvflags |= MDSO_DRIVER_COMPUTE_CRC64;
+					} else {
+						cctx.drvflags &= ~(uint64_t)MDSO_DRIVER_COMPUTE_CRC64;
+						cctx.drvflags |= MDSO_DRIVER_COMPUTE_CRC32;
+					}
+
+					break;
+
 				case TAG_QUAD_PTR:
 					machine = entry;
 

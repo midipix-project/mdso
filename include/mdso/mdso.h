@@ -35,6 +35,8 @@ extern "C" {
 #define MDSO_DRIVER_QUAD_PTR		0x0040
 #define MDSO_DRIVER_GENERATE_ASM	0x0100
 #define MDSO_DRIVER_GENERATE_OBJECTS	0x0200
+#define MDSO_DRIVER_COMPUTE_CRC32	0x0400
+#define MDSO_DRIVER_COMPUTE_CRC64	0x0800
 
 #define MDSO_DRIVER_ANNOTATE_ALWAYS	0x1000
 #define MDSO_DRIVER_ANNOTATE_NEVER	0x2000
@@ -159,6 +161,8 @@ mdso_api int  mdso_create_implib_archive(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_sources(const struct mdso_driver_ctx *);
 mdso_api int  mdso_create_implib_objects(const struct mdso_driver_ctx *);
 mdso_api int  mdso_output_export_symbols(const struct mdso_driver_ctx *, const struct mdso_unit_ctx *);
+mdso_api int  mdso_output_expsyms_crc32 (const struct mdso_driver_ctx *, const struct mdso_unit_ctx *);
+mdso_api int  mdso_output_expsyms_crc64 (const struct mdso_driver_ctx *, const struct mdso_unit_ctx *);
 mdso_api int  mdso_output_error_record  (const struct mdso_driver_ctx *, const struct mdso_error_info *);
 mdso_api int  mdso_output_error_vector  (const struct mdso_driver_ctx *);
 

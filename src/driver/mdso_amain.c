@@ -55,6 +55,12 @@ static void mdso_perform_unit_actions(
 {
 	if (uctx->cctx->fmtflags & MDSO_OUTPUT_EXPORT_SYMS)
 		mdso_output_export_symbols(dctx,uctx);
+
+	if (uctx->cctx->drvflags & MDSO_DRIVER_COMPUTE_CRC32)
+		mdso_output_expsyms_crc32(dctx,uctx);
+
+	if (uctx->cctx->drvflags & MDSO_DRIVER_COMPUTE_CRC64)
+		mdso_output_expsyms_crc64(dctx,uctx);
 }
 
 static int mdso_exit(struct mdso_driver_ctx * dctx, int ret)
