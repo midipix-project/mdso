@@ -44,8 +44,9 @@ struct mdso_sym_entry {
 };
 
 struct mdso_ref_entry {
-	uintptr_t			rbackref;
-	uintptr_t			rsymref;
+	uint32_t			rsecrva;
+	uint32_t			rbackref;
+	uint32_t			rsymref;
 };
 
 struct mdso_meta_record {
