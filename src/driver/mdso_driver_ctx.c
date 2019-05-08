@@ -33,6 +33,16 @@ static const struct mdso_source_version mdso_src_version = {
 	MDSO_GIT_VERSION
 };
 
+/* default fd context */
+static const struct mdso_fd_ctx mdso_default_fdctx = {
+	.fdin  = STDIN_FILENO,
+	.fdout = STDOUT_FILENO,
+	.fderr = STDERR_FILENO,
+	.fdcwd = AT_FDCWD,
+	.fddst = AT_FDCWD,
+	.fdlog = (-1),
+};
+
 struct mdso_driver_ctx_alloc {
 	struct argv_meta *		meta;
 	struct mdso_driver_ctx_impl	ctx;
@@ -188,16 +198,8 @@ int mdso_get_driver_ctx(
 
 	(void)envp;
 
-	if (!fdctx) {
-		fdctx = &(const struct mdso_fd_ctx) {
-			.fdin  = STDIN_FILENO,
-			.fdout = STDOUT_FILENO,
-			.fderr = STDERR_FILENO,
-			.fdlog = (-1),
-			.fdcwd = AT_FDCWD,
-			.fddst = AT_FDCWD,
-		};
-	}
+	if (!fdctx)
+		fdctx = &mdso_default_fdctx;
 
 	argv_optv_init(mdso_default_options,optv);
 
