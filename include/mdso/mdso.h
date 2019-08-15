@@ -13,8 +13,8 @@ extern "C" {
 /* pre-alpha */
 #ifndef MDSO_APP
 #ifndef MDSO_PRE_ALPHA
-#error  libmdso: pre-alpha: ABI is not final!
-#error  to use the library, please pass -DMDSO_PRE_ALPHA to the compiler.
+#warning libmdso: pre-alpha: ABI is not final!
+#warning pass -DMDSO_PRE_ALPHA to suppress this warning.
 #endif
 #endif
 
