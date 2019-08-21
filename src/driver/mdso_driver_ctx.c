@@ -323,11 +323,12 @@ int mdso_get_driver_ctx(
 		cctx.drvflags |= MDSO_DRIVER_QUAD_PTR;
 
 
-	if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
-		return mdso_driver_usage(
-			fdctx->fderr,
-			program,0,
-			optv,meta);
+	if (cctx.drvflags & MDSO_DRIVER_VERBOSITY_USAGE)
+		if (!nunits && !(cctx.drvflags & MDSO_DRIVER_VERSION))
+			return mdso_driver_usage(
+				fdctx->fderr,
+				program,0,
+				optv,meta);
 
 	if (pretty && !strcmp(pretty,"yaml"))
 		cctx.fmtflags |= MDSO_PRETTY_YAML;
