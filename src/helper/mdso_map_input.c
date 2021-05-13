@@ -48,11 +48,10 @@ int mdso_map_input(
 	if (st.st_size == 0) {
 		map->size = 0;
 		map->addr = 0;
-		return 0;
+	} else {
+		map->size = st.st_size;
+		map->addr = mmap(0,map->size,prot,MAP_PRIVATE,fd,0);
 	}
-
-	map->size = st.st_size;
-	map->addr = mmap(0,map->size,prot,MAP_PRIVATE,fd,0);
 
 	if (fnew)
 		close(fd);
