@@ -240,6 +240,8 @@ int mdso_get_driver_ctx(
 							entry->arg,
 							optv,meta);
 
+					break;
+
 				case TAG_VERSION:
 					cctx.drvflags |= MDSO_DRIVER_VERSION;
 					break;
