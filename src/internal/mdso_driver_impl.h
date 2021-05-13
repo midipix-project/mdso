@@ -59,6 +59,7 @@ struct mdso_driver_ctx_impl {
 	struct mdso_error_info**        erricap;
 	struct mdso_error_info *        erriptr[64];
 	struct mdso_error_info          erribuf[64];
+	char                            tmpname[32];
 };
 
 struct mdso_unit_ctx_impl {

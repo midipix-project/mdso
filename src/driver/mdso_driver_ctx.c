@@ -378,6 +378,9 @@ static void mdso_free_driver_ctx_impl(struct mdso_driver_ctx_alloc * ictx)
 		close(ictx->ctx.fddst);
 
 	if (ictx->ctx.fdtmpin >= 0)
+		unlink(ictx->ctx.tmpname);
+
+	if (ictx->ctx.fdtmpin >= 0)
 		close(ictx->ctx.fdtmpin);
 
 	if (ictx->ctx.asmbase)

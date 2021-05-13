@@ -42,7 +42,7 @@ static int mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 	ssize_t cnt;
 	char *	ch;
 	char	buf[4096];
-	char	template[] = "/tmp/mdso_stdin_to_tmp_XXXXXX";
+	char	tmpname[] = "/tmp/mdso_stdin_to_tmp_XXXXXX";
 
 	addr = (uintptr_t)dctx - offsetof(struct mdso_driver_ctx_impl,ctx);
 	ictx = (struct mdso_driver_ctx_impl *)addr;
@@ -50,13 +50,16 @@ static int mdso_stdin_to_tmp(const struct mdso_driver_ctx * dctx)
 	if (ictx->fdtmpin >= 0)
 		return dup(ictx->fdtmpin);
 
-	if ((fdtmp = mkstemp(template)) < 0)
+	if ((fdtmp = mkstemp(tmpname)) < 0)
 		return -1;
 
 	if ((ictx->fdtmpin = dup(fdtmp)) < 0) {
 		close(fdtmp);
+		unlink(tmpname);
 		return -1;
 	}
+
+	strcpy(ictx->tmpname,tmpname);
 
 	for (;;) {
 		ret = read(0,buf,sizeof(buf)-1);
