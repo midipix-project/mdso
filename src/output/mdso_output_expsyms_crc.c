@@ -1,6 +1,6 @@
 /****************************************************************/
 /*  mdso: midipix dso scavenger                                 */
-/*  Copyright (C) 2015--2019  Z. Gilboa                         */
+/*  Copyright (C) 2015--2021  SysDeer Technologies, LLC         */
 /*  Released under GPLv2 and GPLv3; see COPYING.MDSO.           */
 /****************************************************************/
 
