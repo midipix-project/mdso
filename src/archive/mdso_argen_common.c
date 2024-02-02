@@ -138,10 +138,6 @@ int  mdso_argen_common(
 	objlen += sizeof(uint32_t) * (1 + mapstrsnum);
 	objlen += mapstrslen;
 
-	objlen += 15;
-	objlen |= 15;
-	objlen ^= 15;
-
 	/* archive meta info, in-memory mapping */
 	if (vobj->addr && (vobj->size < objlen))
 		return MDSO_BUFFER_ERROR(dctx);
