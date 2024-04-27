@@ -31,6 +31,65 @@ struct mdso_symentry_object {
 	struct pe_raw_coff_strtbl	cst;
 };
 
+static void mdso_obj_write_secoff(unsigned char * ch, uint64_t secoff)
+{
+	*ch++ = '/';
+	mdso_obj_write_dec(ch,secoff);
+}
+
+static void mdso_obj_write_sym_symentry(char * ch, const char * sym)
+{
+	*ch++ = '.';
+
+	for (; *sym; )
+		*ch++ = *sym++;
+
+	memcpy(ch,"_symentry.s",11);
+}
+
+static void mdso_obj_write_sym_symstr(char * ch, const char * sym)
+{
+	memcpy(ch,".symstr_",8);
+	ch = &ch[8];
+
+	for (; *sym; )
+		*ch++ = *sym++;
+}
+
+static void mdso_obj_write_sym_impstr(char * ch, uint32_t uscore, const char * sym)
+{
+	memcpy(ch,"__imp_",6);
+	ch = &ch[6];
+
+	if (uscore)
+		*ch++ = '_';
+
+	for (; *sym; )
+		*ch++ = *sym++;
+}
+
+static void mdso_obj_write_sym_secstr(char * ch, const char * secname, const char * sym)
+{
+	for (; *secname; )
+		*ch++ = *secname++;
+
+	*ch++ = '$';
+
+	for (; *sym; )
+		*ch++ = *sym++;
+}
+
+static void mdso_obj_write_libname(char * ch, const char * secname, const char * sym)
+{
+	for (; *secname; )
+		*ch++ = *secname++;
+
+	*ch++ = '_';
+
+	for (; *sym; )
+		*ch++ = *sym++;
+}
+
 int mdso_objgen_symentry(
 	const struct mdso_driver_ctx *	dctx,
 	const char *			sym,
@@ -147,13 +206,13 @@ int mdso_objgen_symentry(
 	mdso_obj_write_short(syment->hdr.cfh_characteristics,oattr);
 
 	/* .dsostrs section header */
-	sprintf((char *)syment->sec[0].sh_name,"/%d",stroff_dsostrs);
+	mdso_obj_write_secoff(syment->sec[0].sh_name,stroff_dsostrs);
 	mdso_obj_write_long(syment->sec[0].sh_size_of_raw_data,symlen+1);
 	mdso_obj_write_long(syment->sec[0].sh_ptr_to_raw_data,stroff);
 	mdso_obj_write_long(syment->sec[0].sh_characteristics,sattr);
 
 	/* .dsosyms section header */
-	sprintf((char *)syment->sec[1].sh_name,"/%d",stroff_dsosyms);
+	mdso_obj_write_secoff(syment->sec[1].sh_name,stroff_dsosyms);
 	mdso_obj_write_long(syment->sec[1].sh_size_of_raw_data,2*relrva);
 	mdso_obj_write_long(syment->sec[1].sh_ptr_to_raw_data,refoff);
 	mdso_obj_write_long(syment->sec[1].sh_ptr_to_relocs,reloff);
@@ -186,7 +245,7 @@ int mdso_objgen_symentry(
 	mdso_obj_write_long(&symrec[1].cs_name[4],stroff_file);
 
 	memcpy(symrec[0].cs_name,".file",5);
-	sprintf(&strtbl[stroff_file],".%s_symentry.s",sym);
+	mdso_obj_write_sym_symentry(&strtbl[stroff_file],sym);
 
 	symrec += 2;
 
@@ -196,7 +255,7 @@ int mdso_objgen_symentry(
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsostrs);
-	sprintf(&strtbl[stroff_dsostrs],"%s$%s",MDSO_STRS_SECTION,sym);
+	mdso_obj_write_sym_secstr(&strtbl[stroff_dsostrs],MDSO_STRS_SECTION,sym);
 
 	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,symlen+1);
@@ -210,7 +269,7 @@ int mdso_objgen_symentry(
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsosyms);
-	sprintf(&strtbl[stroff_dsosyms],"%s$%s",MDSO_SYMS_SECTION,sym);
+	mdso_obj_write_sym_secstr(&strtbl[stroff_dsosyms],MDSO_SYMS_SECTION,sym);
 
 	aux = (struct pe_raw_aux_rec_section *)&symrec[1];
 	mdso_obj_write_long(aux->aux_size,2*relrva);
@@ -224,7 +283,7 @@ int mdso_objgen_symentry(
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_symstr);
-	sprintf(&strtbl[stroff_symstr],".symstr_%s",sym);
+	mdso_obj_write_sym_symstr(&strtbl[stroff_symstr],sym);
 
 	symrec += 1;
 
@@ -234,7 +293,7 @@ int mdso_objgen_symentry(
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_impsym);
-	sprintf(&strtbl[stroff_impsym],"__imp_%s%s",uscore ? "_" : "", sym);
+	mdso_obj_write_sym_impstr(&strtbl[stroff_impsym],uscore,sym);
 
 	symrec += 1;
 
@@ -249,7 +308,7 @@ int mdso_objgen_symentry(
 	mdso_obj_write_short(symrec[0].cs_section_number,0);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_libname);
 
-	sprintf(&strtbl[stroff_libname],"%s_%s",
+	mdso_obj_write_libname(&strtbl[stroff_libname],
 		MDSO_META_SECTION,
 		dctx->cctx->libname);
 

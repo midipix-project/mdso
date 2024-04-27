@@ -31,3 +31,17 @@ static inline void mdso_obj_write_quad(unsigned char * ch, uint64_t val)
 	ch[6] = val >> 48;
 	ch[7] = val >> 56;
 }
+
+static inline void mdso_obj_write_dec(unsigned char * ch, uint64_t dec)
+{
+	int      digits;
+	uint64_t val;
+
+	*ch = '0';
+
+	for (digits=0,val=dec; val; digits++)
+		val /= 10;
+
+	for (val=dec; val; val/=10)
+		ch[--digits] = (val % 10) + '0';
+}
