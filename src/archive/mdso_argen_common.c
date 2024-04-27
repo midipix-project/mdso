@@ -11,8 +11,24 @@
 #include <sys/mman.h>
 
 #include <mdso/mdso.h>
+#include "mdso_object_impl.h"
 #include "mdso_errinfo_impl.h"
 #include "perk_structs.h"
+
+static void mdso_obj_write_objname(char * ch, off_t objidx)
+{
+	ch[0] = 's';
+
+	ch[6] = (objidx % 10) + '0'; objidx /= 10;
+	ch[5] = (objidx % 10) + '0'; objidx /= 10;
+	ch[4] = (objidx % 10) + '0'; objidx /= 10;
+	ch[3] = (objidx % 10) + '0'; objidx /= 10;
+	ch[2] = (objidx % 10) + '0'; objidx /= 10;
+	ch[1] = (objidx % 10) + '0'; objidx /= 10;
+
+	ch[7] = '.';
+	ch[8] = 'o';
+}
 
 static void mdso_argen_common_hdr(
 	struct pe_raw_archive_common_hdr *	arhdr,
@@ -20,7 +36,6 @@ static void mdso_argen_common_hdr(
 	size_t					size)
 {
 	size_t	slen;
-	char	sbuf[10];
 
 	memset(arhdr,0x20,sizeof(*arhdr));
 
@@ -33,8 +48,7 @@ static void mdso_argen_common_hdr(
 	arhdr->ar_file_mode[0] = '0';
 	arhdr->ar_time_date_stamp[0] = '0';
 
-	slen = sprintf(sbuf,"%zu",size);
-	memcpy(arhdr->ar_file_size,sbuf,slen);
+	mdso_obj_write_dec(arhdr->ar_file_size,size);
 
 	arhdr->ar_end_tag[0] = 0x60;
 	arhdr->ar_end_tag[1] = 0x0a;
@@ -212,9 +226,7 @@ int  mdso_argen_common(
 			idx += sizeof(uint32_t);
 		}
 
-		sprintf(
-			objname,"s%06zu.o",
-			psym - symv);
+		mdso_obj_write_objname(objname,psym - symv);
 
 		ret = mdso_objgen_symentry(dctx,*psym,pobj);
 
