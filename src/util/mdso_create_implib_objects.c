@@ -9,19 +9,50 @@
 #include <string.h>
 
 #include <mdso/mdso.h>
+#include "mdso_hexfmt_impl.h"
 #include "mdso_errinfo_impl.h"
 
-static void mdso_init_objname(char * buf, const char * fmt, const char * str)
+static void mdso_init_symentry(char * ch, const char * str)
 {
-	char			hexstr[24];
-	long long unsigned int	crc64;
+	uint64_t crc64;
+	unsigned slen = 11;
 
-	if (strlen(str) + strlen(fmt) > (PATH_MAX - 1)) {
-		crc64 = mdso_crc64_mbstr((const unsigned char *)str,0);
-		sprintf(hexstr,"%llx",crc64);
-		sprintf(buf,fmt,hexstr);
-	} else
-		sprintf(buf,fmt,str);
+	ch[0] = '.';
+	ch++;
+
+	if (strlen(str) > (PATH_MAX - slen - 1)) {
+		crc64 = mdso_crc64_mbstr((unsigned char *)str,0);
+		mdso_write_hex_64(ch,crc64);
+		ch = &ch[16];
+	} else {
+		for (; *str; )
+			*ch++ = *str++;
+	}
+
+	memcpy(ch,"_symentry.o",slen);
+	ch[slen] = '\0';
+}
+
+static void mdso_init_dsometa(char * ch, const char * str)
+{
+	uint64_t crc64;
+	unsigned slen = 9;
+
+	memcpy(ch,".dsometa_",slen);
+	ch = &ch[slen];
+
+	if (strlen(str) > (PATH_MAX - slen - 1)) {
+		crc64 = mdso_crc64_mbstr((unsigned char *)str,0);
+		mdso_write_hex_64(ch,crc64);
+		ch = &ch[16];
+	} else {
+		for (; *str; )
+			*ch++ = *str++;
+	}
+
+	ch[0] = '.';
+	ch[1] = 'o';
+	ch[2] = '\0';
 }
 
 static void mdso_init_object(struct mdso_object * obj, const char * objname)
@@ -44,7 +75,7 @@ int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 			return MDSO_NESTED_ERROR(dctx);
 
 		for (sym=uctx->syms; *sym; sym++) {
-			mdso_init_objname(objname,".%s_symentry.o",*sym);
+			mdso_init_symentry(objname,*sym);
 			mdso_init_object(&obj,objname);
 
 			if (mdso_objgen_symentry(dctx,*sym,&obj) < 0)
@@ -55,7 +86,7 @@ int  mdso_create_implib_objects(const struct mdso_driver_ctx * dctx)
 	}
 
 	/* dsometa */
-	mdso_init_objname(objname,".dsometa_%s.o",dctx->cctx->libname);
+	mdso_init_dsometa(objname,dctx->cctx->libname);
 	mdso_init_object(&obj,objname);
 
 	if (mdso_objgen_dsometa(dctx,&obj) < 0)

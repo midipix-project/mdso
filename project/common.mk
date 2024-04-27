@@ -22,6 +22,7 @@ API_SRCS = \
 INTERNAL_SRCS = \
 	src/internal/$(PACKAGE)_dprintf_impl.c \
 	src/internal/$(PACKAGE)_errinfo_impl.c \
+	src/internal/$(PACKAGE)_hexfmt_impl.c \
 
 APP_SRCS = \
 	src/mdso.c
