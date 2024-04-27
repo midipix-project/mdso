@@ -101,6 +101,7 @@ int mdso_objgen_symentry(
 	void *				mark;
 	char *				ch;
 	char *				strtbl;
+	const char *			src;
 	struct pe_raw_aux_rec_section *	aux;
 	size_t				liblen;
 	uint32_t			symlen;
@@ -298,8 +299,13 @@ int mdso_objgen_symentry(
 	symrec += 1;
 
 	/* archive symbol map */
-	if (vobj->mapstrs)
-		strcpy(vobj->mapstrs,&strtbl[stroff_impsym]);
+	if (vobj->mapstrs) {
+		ch  = vobj->mapstrs;
+		src = &strtbl[stroff_impsym];
+
+		for (; *src; )
+			*ch++ = *src++;
+	}
 
 	/* coff symbol: .dsometa_libname */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
