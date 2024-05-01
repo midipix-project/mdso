@@ -22,7 +22,7 @@ static int pretty_expsym_crc32(
 	const char *	name)
 {
 	return mdso_dprintf(
-		fdout,"%" PRIx32 "  %s\n",
+		fdout,"%08" PRIx32 "  %s\n",
 		mdso_crc32_mbstr((const unsigned char *)name,0),
 		name);
 }
@@ -32,7 +32,7 @@ static int pretty_expsym_crc64(
 	const char *	name)
 {
 	return mdso_dprintf(
-		fdout,"%" PRIx64 "  %s\n",
+		fdout,"%016" PRIx64 "  %s\n",
 		mdso_crc64_mbstr((const unsigned char *)name,0),
 		name);
 }
