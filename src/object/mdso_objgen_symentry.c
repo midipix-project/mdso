@@ -18,6 +18,11 @@
 #include "perk_consts.h"
 #include "perk_structs.h"
 
+struct pe_raw_coff_strtbl_impl {
+	unsigned char	cst_size	[0x04];
+	unsigned char	cst_data	[0x10];
+};
+
 struct mdso_symfn_refs {
 	unsigned char refs[16];
 };
@@ -28,7 +33,7 @@ struct mdso_symentry_object {
 	struct mdso_symfn_refs		ref[1];
 	struct pe_raw_coff_reloc	rel[2];
 	struct pe_raw_coff_symbol	sym[9];
-	struct pe_raw_coff_strtbl	cst;
+	struct pe_raw_coff_strtbl_impl  cst;
 };
 
 static void mdso_obj_write_secoff(unsigned char * ch, uint64_t secoff)

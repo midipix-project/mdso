@@ -18,6 +18,11 @@
 #include "perk_consts.h"
 #include "perk_structs.h"
 
+struct pe_raw_coff_strtbl_impl {
+	unsigned char	cst_size	[0x04];
+	unsigned char	cst_data	[0x10];
+};
+
 struct mdso_unified_record {
 	unsigned char 	data[80];
 };
@@ -28,7 +33,7 @@ struct mdso_dsometa_object {
 	struct mdso_unified_record	rec[1];
 	struct pe_raw_coff_reloc	rel[1];
 	struct pe_raw_coff_symbol	sym[8];
-	struct pe_raw_coff_strtbl	cst;
+	struct pe_raw_coff_strtbl_impl  cst;
 };
 
 int mdso_objgen_dsometa(
