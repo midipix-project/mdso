@@ -129,7 +129,7 @@ int mdso_objgen_dsometa(
 	mdso_obj_write_short(dsometa->hdr.cfh_machine,machine);
 	mdso_obj_write_short(dsometa->hdr.cfh_num_of_sections,2);
 	mdso_obj_write_long(dsometa->hdr.cfh_ptr_to_sym_tbl,symoff);
-	mdso_obj_write_long(dsometa->hdr.cfh_num_of_syms,8);
+	mdso_obj_write_long(dsometa->hdr.cfh_num_of_sym_recs,8);
 	mdso_obj_write_short(dsometa->hdr.cfh_characteristics,oattr);
 
 	/* .dsostrs section header */
