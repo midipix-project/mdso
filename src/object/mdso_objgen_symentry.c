@@ -245,7 +245,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: .file */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_FILE;
-	symrec[0].cs_num_of_aux_symbols[0] = 1;
+	symrec[0].cs_num_of_aux_recs[0] = 1;
 
 	mdso_obj_write_short(&symrec[0].cs_section_number[0],PE_IMAGE_SYM_DEBUG);
 	mdso_obj_write_long(&symrec[1].cs_name[4],stroff_file);
@@ -257,7 +257,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: .dsostrs */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_STATIC;
-	symrec[0].cs_num_of_aux_symbols[0] = 1;
+	symrec[0].cs_num_of_aux_recs[0] = 1;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsostrs);
@@ -271,7 +271,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: .dsosyms */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_STATIC;
-	symrec[0].cs_num_of_aux_symbols[0] = 1;
+	symrec[0].cs_num_of_aux_recs[0] = 1;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_dsosyms);
@@ -285,7 +285,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: .symstr */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_STATIC;
-	symrec[0].cs_num_of_aux_symbols[0] = 0;
+	symrec[0].cs_num_of_aux_recs[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,1);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_symstr);
@@ -295,7 +295,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: __imp_sym */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
-	symrec[0].cs_num_of_aux_symbols[0] = 0;
+	symrec[0].cs_num_of_aux_recs[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,2);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_impsym);
@@ -314,7 +314,7 @@ int mdso_objgen_symentry(
 
 	/* coff symbol: .dsometa_libname */
 	symrec[0].cs_storage_class[0] = PE_IMAGE_SYM_CLASS_EXTERNAL;
-	symrec[0].cs_num_of_aux_symbols[0] = 0;
+	symrec[0].cs_num_of_aux_recs[0] = 0;
 
 	mdso_obj_write_short(symrec[0].cs_section_number,0);
 	mdso_obj_write_long(&symrec[0].cs_name[4],stroff_libname);
